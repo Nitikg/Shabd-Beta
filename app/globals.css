@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-shabd-offwhite text-shabd-indigo antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.shabd-gradient-bg {
+  background: radial-gradient(circle at top, #ffd166 0, #fff8f0 45%, #ffe0c2 100%);
+}
+
+.floating-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 107, 53, 0.16) 0, transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(199, 125, 255, 0.18) 0, transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(6, 214, 160, 0.14) 0, transparent 55%);
+  opacity: 0.6;
+  z-index: -1;
+}
+
+.shabd-card {
+  @apply rounded-3xl bg-white/80 shadow-soft backdrop-blur-md border border-white/60;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 107, 53, 0.5);
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
