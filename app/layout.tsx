@@ -21,8 +21,8 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  title: 'Shabd Beta',
-  description: "Shabd — India's first screen-free AI voice learning companion for kids."
+  title: 'Mithu Beta',
+  description: "Mithu — India's first screen-free AI voice learning companion for kids."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

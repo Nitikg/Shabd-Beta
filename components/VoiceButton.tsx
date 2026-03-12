@@ -19,7 +19,7 @@ export function VoiceButton({
         onClick={onPress}
         className={cn(
           'relative grid h-20 w-20 place-items-center rounded-full shadow-soft transition active:scale-95',
-          disabled ? 'bg-gray-300 text-gray-500' : isListening ? 'bg-red-500 text-white' : 'bg-shabd-orange text-white'
+          disabled ? 'bg-gray-300 text-gray-500' : isListening ? 'bg-red-500 text-white' : 'bg-mithu-orange text-white'
         )}
         aria-label={disabled ? 'Mic disabled' : isListening ? 'Listening' : 'Tap to talk'}
       >
@@ -31,7 +31,7 @@ export function VoiceButton({
         />
         <span className="relative text-2xl">{disabled ? '🔒' : '🎙'}</span>
       </button>
-      <div className="text-xs text-shabd-indigo/70">{disabled ? 'Wait…' : isListening ? 'Listening…' : 'Tap to talk'}</div>
+      <div className="text-xs text-mithu-indigo/70">{disabled ? 'Wait…' : isListening ? 'Listening…' : 'Tap to talk'}</div>
     </div>
   );
 }

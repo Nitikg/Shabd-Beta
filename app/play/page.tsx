@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShabdCharacter, type ShabdState } from '@/components/ShabdCharacter';
+import { MithuCharacter, type MithuState } from '@/components/MithuCharacter';
 import { SpeechBubble } from '@/components/SpeechBubble';
 import { ChildTranscript } from '@/components/ChildTranscript';
 import { SessionTimer } from '@/components/SessionTimer';
@@ -12,9 +12,9 @@ import { useSession } from '@/hooks/useSession';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
 
 const OPENERS = [
-  "Hi there! I'm Shabd! What's your name? I love meeting new friends!",
-  "Namasté! I'm Shabd the owl! Can you tell me — what's your favourite animal?",
-  "Hello hello! I'm Shabd! Should we tell a story together, or should I ask you some fun questions?"
+  "Hi there! I'm Mithu! What's your name? I love meeting new friends!",
+  "Namasté! I'm Mithu the parrot! Can you tell me — what's your favourite animal?",
+  "Hello hello! I'm Mithu! Should we tell a story together, or should I ask you some fun questions?"
 ];
 
 function pick<T>(arr: T[]) {
@@ -23,7 +23,7 @@ function pick<T>(arr: T[]) {
 
 function getLang(): 'en' | 'hi' {
   if (typeof window === 'undefined') return 'en';
-  const v = localStorage.getItem('shabd:lang');
+  const v = localStorage.getItem('mithu:lang');
   return v === 'hi' ? 'hi' : 'en';
 }
 
@@ -39,12 +39,12 @@ export default function PlayPage() {
   const [status, setStatus] = useState<UiStatus>('ready');
   const [hasStarted, setHasStarted] = useState(false);
   const autoListen = true;
-  const [shabdText, setShabdText] = useState('');
+  const [mithuText, setMithuText] = useState('');
   const [childText, setChildText] = useState('');
   const [parentError, setParentError] = useState<string | null>(null);
   const greetedRef = useRef(false);
 
-  const shabdState: ShabdState = useMemo(() => {
+  const mithuState: MithuState = useMemo(() => {
     if (status === 'listening') return 'listening';
     if (status === 'thinking') return 'thinking';
     if (status === 'speaking') return 'speaking';
@@ -53,12 +53,12 @@ export default function PlayPage() {
 
   const safeSpeak = async (text: string) => {
     setStatus('speaking');
-    setShabdText(text);
+    setMithuText(text);
     session.addMessage({ role: 'assistant', content: text });
     const result = await voice.play(text, { language });
     if (!result.ok) {
       setParentError(
-        'Shabd is having trouble playing sound in this browser. For best experience, try Android Chrome or desktop Chrome.'
+        'Mithu is having trouble playing sound in this browser. For best experience, try Android Chrome or desktop Chrome.'
       );
     }
     if (session.isEnded) return;
@@ -137,19 +137,19 @@ export default function PlayPage() {
 
   const statusText =
     !hasStarted
-      ? 'Tap once to start talking to Shabd.'
+      ? 'Tap once to start talking to Mithu.'
       : status === 'listening'
-        ? 'Shabd is listening…'
+        ? 'Mithu is listening…'
         : status === 'thinking'
-          ? 'Shabd is thinking…'
+          ? 'Mithu is thinking…'
           : status === 'speaking'
-            ? 'Shabd is speaking…'
+            ? 'Mithu is speaking…'
             : status === 'ended'
               ? 'Session ending…'
-              : 'Shabd will listen to you…';
+              : 'Mithu will listen to you…';
 
   return (
-    <main className="shabd-gradient-bg min-h-screen px-5 py-6">
+    <main className="mithu-gradient-bg min-h-screen px-5 py-6">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-md flex-col">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -170,23 +170,23 @@ export default function PlayPage() {
 
         <div className="mt-6 flex flex-1 flex-col items-center gap-4">
           <button type="button" onClick={handleStart} className="flex flex-col items-center gap-3">
-            <ShabdCharacter state={shabdState} className="scale-[1.08]" />
+            <MithuCharacter state={mithuState} className="scale-[1.08]" />
             {!hasStarted && (
-              <span className="rounded-3xl bg-shabd-orange px-5 py-2 text-sm font-[var(--font-baloo)] text-white shadow-soft">
+              <span className="rounded-3xl bg-mithu-orange px-5 py-2 text-sm font-[var(--font-baloo)] text-white shadow-soft">
                 Tap to begin ✨
               </span>
             )}
           </button>
-          <SpeechBubble text={shabdText} />
+          <SpeechBubble text={mithuText} />
           <ChildTranscript text={childText} />
           {parentError ? (
-            <div className="shabd-card w-full max-w-md px-4 py-3 text-sm text-red-700">
+            <div className="mithu-card w-full max-w-md px-4 py-3 text-sm text-red-700">
               {parentError}
             </div>
           ) : null}
         </div>
 
-        <div className="sticky bottom-0 pb-4 pt-3 text-center text-sm font-[var(--font-nunito)] text-shabd-indigo/70">
+        <div className="sticky bottom-0 pb-4 pt-3 text-center text-sm font-[var(--font-nunito)] text-mithu-indigo/70">
           {statusText}
         </div>
       </div>

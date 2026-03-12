@@ -2,9 +2,9 @@
 
 import { cn } from '@/lib/utils';
 
-export type ShabdState = 'idle' | 'listening' | 'thinking' | 'speaking';
+export type MithuState = 'idle' | 'listening' | 'thinking' | 'speaking';
 
-export function ShabdCharacter({ state, className }: { state: ShabdState; className?: string }) {
+export function MithuCharacter({ state, className }: { state: MithuState; className?: string }) {
   const isListening = state === 'listening';
   const isThinking = state === 'thinking';
   const isSpeaking = state === 'speaking';
@@ -17,7 +17,7 @@ export function ShabdCharacter({ state, className }: { state: ShabdState; classN
         isListening ? 'animate-float' : '',
         className
       )}
-      aria-label={`Shabd is ${state}`}
+      aria-label={`Mithu is ${state}`}
     >
       <div className={cn('relative', isListening ? 'animate-pulse-ring' : '')}>
         <svg
@@ -29,10 +29,21 @@ export function ShabdCharacter({ state, className }: { state: ShabdState; classN
         >
           <defs>
             <linearGradient id="bodyGrad" x1="60" y1="30" x2="160" y2="190" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#FFD166" />
-              <stop offset="1" stopColor="#FF6B35" />
+              <stop stopColor="#4CAF50" />
+              <stop offset="1" stopColor="#2E7D32" />
+            </linearGradient>
+            <linearGradient id="wingGrad" x1="180" y1="80" x2="210" y2="150" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#66BB6A" />
+              <stop offset="1" stopColor="#388E3C" />
             </linearGradient>
           </defs>
+
+          {/* Tail */}
+          <path
+            d="M100 170l10 30 10-30"
+            fill="#2E7D32"
+            opacity="0.8"
+          />
 
           {/* Body */}
           <path
@@ -43,7 +54,7 @@ export function ShabdCharacter({ state, className }: { state: ShabdState; classN
           {/* Belly */}
           <path
             d="M110 82c-24 0-44 20-44 44s20 54 44 54 44-30 44-54-20-44-44-44Z"
-            fill="rgba(255,248,240,0.85)"
+            fill="rgba(220, 237, 200, 0.9)"
           />
 
           {/* Eyes */}
@@ -68,32 +79,26 @@ export function ShabdCharacter({ state, className }: { state: ShabdState; classN
             <circle cx="138" cy="82" r="3" fill="#FFF8F0" opacity="0.9" />
           </g>
 
-          {/* Beak */}
-          <path d="M110 102l-14 10 14 10 14-10-14-10Z" fill="#FFB703" />
+          {/* Beak - Parrot style */}
+          <path d="M110 102c-5 0-14 4-14 12 0 10 14 14 14 14s14-4 14-14c0-8-9-12-14-12Z" fill="#FF9800" />
+          <path d="M110 105c-3 0-8 3-8 9 0 6 8 10 8 10s8-4 8-10c0-6-5-9-8-9Z" fill="#F57C00" opacity="0.5" />
 
           {/* Mouth (speaking) */}
           <path
-            d="M96 123c6 8 14 12 14 12s8-4 14-12"
+            d="M96 128c6 6 14 10 14 10s8-4 14-10"
             stroke="#1B1F3B"
             strokeWidth={isSpeaking ? 5 : 2}
             strokeLinecap="round"
             opacity={isSpeaking ? 0.95 : 0.55}
           />
 
-          {/* Brows */}
+          {/* Crest */}
           <path
-            d="M60 70c8-10 20-14 32-10"
-            stroke="#1B1F3B"
-            strokeWidth="4"
+            d="M110 28c-5-15-15-20-20-20M110 28c5-15 15-20 20-20"
+            stroke="#2E7D32"
+            strokeWidth="6"
             strokeLinecap="round"
-            opacity={isListening ? 0.65 : 0.35}
-          />
-          <path
-            d="M160 70c-8-10-20-14-32-10"
-            stroke="#1B1F3B"
-            strokeWidth="4"
-            strokeLinecap="round"
-            opacity={isListening ? 0.65 : 0.35}
+            opacity="0.8"
           />
         </svg>
 
@@ -110,4 +115,3 @@ export function ShabdCharacter({ state, className }: { state: ShabdState; classN
     </div>
   );
 }
-

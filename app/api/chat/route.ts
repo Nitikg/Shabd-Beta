@@ -1,4 +1,4 @@
-import { SHABD_SYSTEM_PROMPT } from '@/constants/prompts';
+import { MITHU_SYSTEM_PROMPT } from '@/constants/prompts';
 
 export async function POST(req: Request) {
   try {
@@ -10,13 +10,13 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY ?? ''}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL ?? '',
-        'X-Title': 'Shabd App Beta'
+        'X-Title': 'Mithu App Beta'
       },
       body: JSON.stringify({
         model: 'anthropic/claude-3-haiku',
         max_tokens: 150,
         messages: [
-          { role: 'system', content: SHABD_SYSTEM_PROMPT },
+          { role: 'system', content: MITHU_SYSTEM_PROMPT },
           ...(messages ?? [])
         ]
       })

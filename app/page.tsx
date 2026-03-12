@@ -2,31 +2,31 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShabdCharacter } from '@/components/ShabdCharacter';
+import { MithuCharacter } from '@/components/MithuCharacter';
 import { isIOS } from '@/lib/utils';
 
 const COPY = {
   en: {
-    headline: "Namasté! I'm Shabd",
+    headline: "Namasté! I'm Mithu",
     sub: "Your child's curious AI friend — tell me a story, ask me anything!",
     cta: 'Start Talking',
     foot: 'No login needed · Free to try · For ages 4–8',
-    mic: 'Shabd needs to hear your child’s voice. Please allow microphone access.',
+    mic: 'Mithu needs to hear your child’s voice. Please allow microphone access.',
     ios: 'For the best experience, please open this on Android Chrome or desktop Chrome.'
   },
   hi: {
-    headline: 'Namasté! मैं Shabd हूँ',
+    headline: 'Namasté! मैं Mithu हूँ',
     sub: 'मैं आपके बच्चे का जिज्ञासु AI दोस्त हूँ — कहानी सुनाओ, कुछ भी पूछो!',
-    cta: 'Shabd से बात शुरू करें',
+    cta: 'Mithu से बात शुरू करें',
     foot: 'कोई लॉगिन नहीं · मुफ्त · उम्र 4–8',
-    mic: 'Shabd को आपके बच्चे की आवाज़ सुननी है। कृपया माइक्रोफोन की अनुमति दें।',
+    mic: 'Mithu को आपके बच्चे की आवाज़ सुननी है। कृपया माइक्रोफोन की अनुमति दें।',
     ios: 'बेहतर अनुभव के लिए Android Chrome या desktop Chrome पर खोलें।'
   }
 };
 
 function detectLanguage(): 'en' | 'hi' {
   if (typeof window === 'undefined') return 'en';
-  const saved = window.localStorage.getItem('shabd:lang');
+  const saved = window.localStorage.getItem('mithu:lang');
   if (saved === 'hi' || saved === 'en') return saved;
   const nav = navigator.language || '';
   return nav.toLowerCase().startsWith('hi') ? 'hi' : 'en';
@@ -75,7 +75,7 @@ export default function HomePage() {
     try {
       playTinyChime(); // user gesture
       await requestMic();
-      localStorage.setItem('shabd:lang', lang);
+      localStorage.setItem('mithu:lang', lang);
       router.push('/play');
     } catch {
       setMicError(t.mic);
@@ -83,16 +83,16 @@ export default function HomePage() {
   };
 
   return (
-    <main className="shabd-gradient-bg min-h-screen px-5 py-8">
+    <main className="mithu-gradient-bg min-h-screen px-5 py-8">
       <div className="mx-auto flex max-w-md flex-col gap-6">
         <header className="flex items-center justify-between">
-          <div className="font-[var(--font-baloo)] text-2xl tracking-tight text-shabd-indigo">Shabd</div>
+          <div className="font-[var(--font-baloo)] text-2xl tracking-tight text-mithu-indigo">Mithu</div>
           <div className="flex items-center gap-2 rounded-full bg-white/70 p-1 shadow-soft">
             <button
               type="button"
               onClick={() => setLang('en')}
               className={`rounded-full px-3 py-1 text-sm font-[var(--font-nunito)] ${
-                lang === 'en' ? 'bg-shabd-orange text-white' : 'text-shabd-indigo/70'
+                lang === 'en' ? 'bg-mithu-orange text-white' : 'text-mithu-indigo/70'
               }`}
             >
               EN
@@ -101,7 +101,7 @@ export default function HomePage() {
               type="button"
               onClick={() => setLang('hi')}
               className={`rounded-full px-3 py-1 text-sm font-[var(--font-nunito)] ${
-                lang === 'hi' ? 'bg-shabd-orange text-white' : 'text-shabd-indigo/70'
+                lang === 'hi' ? 'bg-mithu-orange text-white' : 'text-mithu-indigo/70'
               }`}
             >
               हिंदी
@@ -109,23 +109,23 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="shabd-card px-5 py-6 text-center">
-          <ShabdCharacter state="idle" className="mb-3" />
-          <div className="font-[var(--font-baloo)] text-2xl">{t.headline} 🦉</div>
-          <div className="mt-2 font-[var(--font-nunito)] text-base text-shabd-indigo/80">{t.sub}</div>
+        <div className="mithu-card px-5 py-6 text-center">
+          <MithuCharacter state="idle" className="mb-3" />
+          <div className="font-[var(--font-baloo)] text-2xl">{t.headline} 🦜</div>
+          <div className="mt-2 font-[var(--font-nunito)] text-base text-mithu-indigo/80">{t.sub}</div>
 
           <button
             type="button"
             onClick={start}
-            className="mt-5 w-full rounded-3xl bg-shabd-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99]"
+            className="mt-5 w-full rounded-3xl bg-mithu-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99]"
           >
             {t.cta} 🎙
           </button>
 
-          <div className="mt-3 text-xs font-[var(--font-nunito)] text-shabd-indigo/60">{t.foot}</div>
+          <div className="mt-3 text-xs font-[var(--font-nunito)] text-mithu-indigo/60">{t.foot}</div>
 
           {isIOS() ? (
-            <div className="mt-3 text-xs font-[var(--font-nunito)] text-shabd-indigo/60">{t.ios}</div>
+            <div className="mt-3 text-xs font-[var(--font-nunito)] text-mithu-indigo/60">{t.ios}</div>
           ) : null}
 
           {micError ? <div className="mt-3 text-sm text-red-600">{micError}</div> : null}

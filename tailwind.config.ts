@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        shabd: {
+        mithu: {
           orange: '#FF6B35',
           yellow: '#FFD166',
           teal: '#06D6A0',

@@ -69,7 +69,7 @@ export function useSession(language: 'en' | 'hi') {
     if (savedRef.current) return;
     savedRef.current = true;
     try {
-      sessionStorage.setItem('shabd:session', JSON.stringify(summary));
+      sessionStorage.setItem('mithu:session', JSON.stringify(summary));
     } catch {
       // ignore
     }

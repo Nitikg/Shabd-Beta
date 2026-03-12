@@ -8,14 +8,14 @@ body {
 }
 
 body {
-  @apply bg-shabd-offwhite text-shabd-indigo antialiased;
+  @apply bg-mithu-offwhite text-mithu-indigo antialiased;
 }
 
 * {
   box-sizing: border-box;
 }
 
-.shabd-gradient-bg {
+.mithu-gradient-bg {
   background: radial-gradient(circle at top, #ffd166 0, #fff8f0 45%, #ffe0c2 100%);
 }
 
@@ -31,7 +31,7 @@ body {
   z-index: -1;
 }
 
-.shabd-card {
+.mithu-card {
   @apply rounded-3xl bg-white/80 shadow-soft backdrop-blur-md border border-white/60;
 }
 
