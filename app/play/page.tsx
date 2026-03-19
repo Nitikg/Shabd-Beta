@@ -11,11 +11,18 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSession } from '@/hooks/useSession';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
 
-const OPENERS = [
-  "Hi there! I'm Mithu! What's your name? I love meeting new friends!",
-  "Namasté! I'm Mithu the parrot! Can you tell me — what's your favourite animal?",
-  "Hello hello! I'm Mithu! Should we tell a story together, or should I ask you some fun questions?"
-];
+const OPENERS: Record<'en' | 'hi', string[]> = {
+  en: [
+    "Hi there! I am Mithu! What is your name? I love meeting new friends!",
+    "Namaste! I am Mithu the parrot! Can you tell me what your favourite animal is?",
+    "Hello hello! I am Mithu! Shall we tell a story together today?"
+  ],
+  hi: [
+    "Namaste! Main hoon Mithu! Tumhara naam kya hai? Mujhe naye doston se milna bahut pasand hai!",
+    "Arre wah! Main hoon Mithu, ek pyara sa parrot! Tumhara favourite animal kaun sa hai?",
+    "Hello hello! Main hoon Mithu! Aaj hum saath mein ek kahaani sunaayein?"
+  ]
+};
 
 function pick<T>(arr: T[]) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -70,7 +77,7 @@ export default function PlayPage() {
     if (hasStarted) return;
     setParentError(null);
     setHasStarted(true);
-    const opener = pick(OPENERS);
+    const opener = pick(OPENERS[language]);
     await safeSpeak(opener);
   };
 
