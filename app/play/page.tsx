@@ -10,6 +10,9 @@ import { ProgressDots } from '@/components/ProgressDots';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSession } from '@/hooks/useSession';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
+import type { KidProfile } from '@/lib/kidProfile';
+
+const MAX_SESSIONS = 3;
 
 const OPENERS: Record<'en' | 'hi', string[]> = {
   en: [
@@ -38,18 +41,74 @@ type UiStatus = 'ready' | 'listening' | 'thinking' | 'speaking' | 'ended';
 
 export default function PlayPage() {
   const router = useRouter();
-  const [language] = useState<'en' | 'hi'>(getLang);
+  const [language, setLanguage] = useState<'en' | 'hi'>(getLang);
   const session = useSession(language);
   const voice = useVoiceOutput();
   const speech = useSpeechRecognition(language);
 
   const [status, setStatus] = useState<UiStatus>('ready');
   const [hasStarted, setHasStarted] = useState(false);
-  const autoListen = true;
   const [mithuText, setMithuText] = useState('');
   const [childText, setChildText] = useState('');
   const [parentError, setParentError] = useState<string | null>(null);
+
+  // Kid profile state (populated when ?kid= param is present)
+  const [kidId, setKidId] = useState<string | null>(null);
+  const [kid, setKid] = useState<KidProfile | null>(null);
+  const [sessionNumber, setSessionNumber] = useState(1);
+  const [kidLoading, setKidLoading] = useState(true);
+
   const greetedRef = useRef(false);
+  const sessionSavedRef = useRef(false);
+  const autoListen = true;
+
+  // Read ?kid= from URL on mount and load kid profile
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('kid');
+
+    if (!id) {
+      setKidLoading(false);
+      return;
+    }
+
+    setKidId(id);
+
+    fetch(`/api/kid?id=${encodeURIComponent(id)}`)
+      .then((r) => {
+        if (r.status === 404) {
+          router.replace('/done');
+          return null;
+        }
+        return r.json();
+      })
+      .then((data) => {
+        if (!data) return;
+        const profile: KidProfile = data.kid;
+
+        if (!profile) {
+          setKidLoading(false);
+          return;
+        }
+
+        // Block if max sessions reached
+        if (profile.sessionCount >= MAX_SESSIONS) {
+          router.replace('/done');
+          return;
+        }
+
+        setKid(profile);
+        setSessionNumber(profile.sessionCount + 1);
+
+        // Use kid's preferred language
+        const lang = profile.language === 'hi' ? 'hi' : 'en';
+        setLanguage(lang);
+        localStorage.setItem('mithu:lang', lang);
+
+        setKidLoading(false);
+      })
+      .catch(() => setKidLoading(false));
+  }, [router]);
 
   const mithuState: MithuState = useMemo(() => {
     if (status === 'listening') return 'listening';
@@ -73,18 +132,94 @@ export default function PlayPage() {
     if (autoListen) speech.startListening();
   };
 
+  const callChat = async (msgs: Array<{ role: string; content: string }>) => {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: msgs,
+        kidId: kidId ?? null,
+        sessionNumber
+      })
+    });
+    if (!res.ok) throw new Error('chat failed');
+    const data = (await res.json()) as { text?: string };
+    const text = (data.text || '').trim();
+    if (!text) throw new Error('empty');
+    return text;
+  };
+
   const handleStart = async () => {
     if (hasStarted) return;
     setParentError(null);
     setHasStarted(true);
-    const opener = pick(OPENERS[language]);
-    await safeSpeak(opener);
+
+    if (kid) {
+      // Kid session: let the AI open with the child's name using the dynamic system prompt
+      setStatus('thinking');
+      try {
+        const text = await callChat([{ role: 'user', content: '[session started]' }]);
+        await safeSpeak(text);
+      } catch {
+        await safeSpeak(`Namaste ${kid.name}! Main hoon Mithu! Aaj hum ek kahaani sunaate hain!`);
+      }
+    } else {
+      // Anonymous session: use hardcoded opener
+      await safeSpeak(pick(OPENERS[language]));
+    }
   };
+
+  const saveSession = async () => {
+    if (sessionSavedRef.current) return;
+    sessionSavedRef.current = true;
+    try {
+      await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: session.sessionId,
+          kidId: kidId ?? null,
+          sessionNumber,
+          startedAt: session.summary.startedAt,
+          endedAt: session.summary.endedAt ?? Date.now(),
+          durationSeconds: session.summary.durationSeconds,
+          turnCount: session.summary.turnCount,
+          language,
+          messages: session.summary.messages
+        })
+      });
+    } catch {
+      // Best-effort — never block the user flow
+    }
+  };
+
+  // Save on tab close / navigation away — sendBeacon works even as the page unloads
+  useEffect(() => {
+    const handleUnload = () => {
+      if (sessionSavedRef.current) return;
+      if (!hasStarted || session.summary.messages.length === 0) return;
+      const payload = JSON.stringify({
+        sessionId: session.sessionId,
+        kidId: kidId ?? null,
+        sessionNumber,
+        startedAt: session.summary.startedAt,
+        endedAt: Date.now(),
+        durationSeconds: Math.floor((Date.now() - session.summary.startedAt) / 1000),
+        turnCount: session.summary.turnCount,
+        language,
+        messages: session.summary.messages
+      });
+      navigator.sendBeacon('/api/session', new Blob([payload], { type: 'application/json' }));
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  // session.summary changes every turn — that's intentional so we always have the latest messages
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasStarted, session.summary, kidId, sessionNumber, language]);
 
   useEffect(() => {
     if (!speech.error) return;
     setParentError(speech.error);
-    // child-friendly retry line
     safeSpeak("Hmm, I didn't quite catch that! Can you say it again?").catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [speech.error]);
@@ -93,9 +228,10 @@ export default function PlayPage() {
     if (!session.isEnded) return;
     setStatus('ended');
     const goodbye =
-      "That was so much fun! You're really clever! Tell your Mamma or Papa what we talked about today. Bye bye!";
-    safeSpeak(goodbye)
-      .catch(() => {})
+      "That was so much fun! You are really clever! Tell your Mamma or Papa what we talked about today. Bye bye!";
+    saveSession()
+      .then(() => safeSpeak(goodbye))
+      .catch(() => safeSpeak(goodbye).catch(() => {}))
       .finally(() => {
         window.setTimeout(() => router.replace('/feedback'), 2500);
       });
@@ -105,7 +241,6 @@ export default function PlayPage() {
   useEffect(() => {
     if (status !== 'listening') return;
     if (!speech.isListening) return;
-    // show realtime interim
     setChildText((speech.interimTranscript || speech.transcript).trim());
   }, [speech.interimTranscript, speech.isListening, speech.transcript, status]);
 
@@ -121,39 +256,39 @@ export default function PlayPage() {
 
     (async () => {
       try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: session.messages.concat({ role: 'user', content: finalText }) })
-        });
-        if (!res.ok) throw new Error('chat failed');
-        const data = (await res.json()) as { text?: string };
-        const text = (data.text || '').trim();
-        if (!text) throw new Error('empty');
+        const text = await callChat(
+          session.messages.concat({ role: 'user', content: finalText })
+        );
         await safeSpeak(text);
       } catch {
-        await safeSpeak("Oops, I got confused for a second! Let's try again!");
+        await safeSpeak("Oops, I got confused for a second! Let us try again!");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [speech.isListening]);
 
-  const endNow = () => {
-    session.endSession();
-  };
+  const endNow = () => session.endSession();
 
-  const statusText =
-    !hasStarted
-      ? 'Tap once to start talking to Mithu.'
-      : status === 'listening'
-        ? 'Mithu is listening…'
-        : status === 'thinking'
-          ? 'Mithu is thinking…'
-          : status === 'speaking'
-            ? 'Mithu is speaking…'
-            : status === 'ended'
-              ? 'Session ending…'
-              : 'Mithu will listen to you…';
+  const statusText = !hasStarted
+    ? 'Tap once to start talking to Mithu.'
+    : status === 'listening'
+      ? 'Mithu is listening…'
+      : status === 'thinking'
+        ? 'Mithu is thinking…'
+        : status === 'speaking'
+          ? 'Mithu is speaking…'
+          : status === 'ended'
+            ? 'Session ending…'
+            : 'Mithu will listen to you…';
+
+  // Show nothing while checking kid profile to avoid flash of wrong UI
+  if (kidLoading) {
+    return (
+      <main className="mithu-gradient-bg min-h-screen flex items-center justify-center">
+        <div className="font-[var(--font-baloo)] text-mithu-indigo/60 text-lg">Loading…</div>
+      </main>
+    );
+  }
 
   return (
     <main className="mithu-gradient-bg min-h-screen px-5 py-6">
@@ -164,6 +299,11 @@ export default function PlayPage() {
             <ProgressDots turnCount={session.turnCount} />
           </div>
           <div className="flex items-center gap-2">
+            {kid && (
+              <span className="font-[var(--font-nunito)] text-sm text-mithu-indigo/60">
+                {kid.name} · Session {sessionNumber}
+              </span>
+            )}
             <button
               type="button"
               onClick={endNow}
@@ -200,4 +340,3 @@ export default function PlayPage() {
     </main>
   );
 }
-

@@ -1,52 +1,76 @@
-# Mithu (Beta) - Project Overview
+# Shabd-Beta — Project Overview
 
-Mithu is a screen-free AI voice learning companion designed for children aged 4 to 8 years old in India. It features Mithu, a cheerful parrot character that interacts with children through speech, telling stories and playing games in Hinglish (English mixed with Hindi).
+Shabd-Beta is the web MVP of Shabd, a screen-free AI voice learning companion for children aged 4–8 in India. The AI character is **Mithu**, a magical parrot who tells interactive stories in Hinglish (English + Hindi). Currently in controlled beta with 25 curated kids doing 3 sessions each.
 
-## Architecture & Technology Stack
+## What Is Working
 
-- **Framework:** Next.js (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS with a custom "mithu" design system
-- **AI Backend:** Claude 3 Haiku (via OpenRouter API)
-- **Speech Capabilities:** 
-  - **Speech Recognition:** Browser Web Speech API (via `useSpeechRecognition.ts`)
-  - **Speech Synthesis:** Likely Browser `speechSynthesis` or a TTS API (via `useVoiceOutput.ts`)
-- **Key Components:**
-  - `MithuCharacter`: SVG-based animated character representing the parrot.
-  - `useSession`: Manages 10-turn conversation limits and session state.
-  - Hinglish System Prompt: Specialized instructions to ensure child-safe, age-appropriate interactions.
+**Voice conversation loop**
+- Child taps Mithu → microphone opens → speech transcribed via browser Web Speech API
+- Transcript sent to Claude 3 Haiku (via OpenRouter) with a dynamic per-kid system prompt
+- Response cleaned server-side (strips stage directions, enforces single question, caps at 4 lines)
+- Mithu speaks response via browser SpeechSynthesis with Google voice selection
+- Auto-listen restarts — loop repeats for up to 10 turns or 5 minutes
 
-## Project Structure
+**Per-kid curated sessions**
+- Each of the 25 kids has a Firestore profile (name, age, class, language, interests)
+- Unique URL per kid: `/play?kid=UNIQUE_ID`
+- Mithu greets child by name, adapts vocabulary and story to their age
+- 3-session limit — locked after completion, redirects to `/done`
+- Session memory: key child answers from session 1 injected into session 2 and 3 prompts
 
-- `app/`: Next.js App Router pages and API routes (`/api/chat`, `/api/tts`, `/api/feedback`).
-- `components/`: UI components (Mithu character, transcript display, feedback forms).
-- `hooks/`: Custom React hooks for session management, speech recognition, and voice output.
-- `constants/`: Project-wide constants, including the highly refined `MITHU_SYSTEM_PROMPT`.
-- `lib/`: Utility functions.
+**Session logging**
+- Every turn (child speech + Mithu response) saved to Firestore
+- Saves on clean session end AND on tab close (sendBeacon)
+- Post-session feedback form saves star rating, observations, child age, WhatsApp number back to same Firestore document
 
-## Building and Running
+**Prompt engineering (promptBuilder.ts)**
+- Storytelling rhythm: 2–3 story turns, then 1 conversational choice question, repeat
+- Choices phrased naturally: "Should we go left or right?" — no A/B labels
+- Indian cultural defaults: haathi, mango jungle, Diwali mela, bazaar, Shabash praise words
+- Age-calibrated voice: sentence length, vocabulary, and maths difficulty tuned per age (4–8)
+- Maths woven into story: counting (age 4) → addition (5) → subtraction (6–7) → multiplication (8)
+- FINAL CHECK section: model self-audits before outputting
 
-### Prerequisites
-- Node.js (v18+ recommended)
-- `.env.local` file with the following keys:
-  - `OPENROUTER_API_KEY`: API key for Claude 3 Haiku.
-  - `NEXT_PUBLIC_APP_URL`: Base URL of the application.
+## Technology Stack
 
-### Commands
-- **Development:** `npm run dev` (starts the development server)
-- **Build:** `npm run build` (creates an optimized production build)
-- **Production Start:** `npm run start` (starts the built application)
-- **Linting:** `npm run lint` (runs ESLint checks)
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| Styling | Tailwind CSS + custom mithu- palette |
+| AI Model | Claude 3 Haiku via OpenRouter |
+| Speech Input | Browser Web Speech API |
+| Speech Output | Browser SpeechSynthesis (Google voice preferred) |
+| Database | Firebase Firestore (via Admin SDK, server-side only) |
+| Deployment | Vercel |
 
-## Development Conventions
+## Key Files
 
-- **Character Identity:** The AI character is "Mithu", a parrot. All UI and system prompts should reflect this.
-- **Language:** Default interaction is Hinglish. System prompts should ensure "One question only" and "Two sentences maximum" rules are followed.
-- **Styling:** Use the custom `mithu-` prefix for Tailwind classes and component styles (defined in `tailwind.config.ts`).
-- **Safety:** Always prioritize child-safe content and warm, encouraging responses. No emojis or markdown in AI spoken responses.
-- **Verification:** When modifying speech or chat logic, ensure browser compatibility (especially for microphone and voice synthesis).
+| File | Purpose |
+|---|---|
+| `app/play/page.tsx` | Main conversation loop, kid profile loading, session saving |
+| `app/api/chat/route.ts` | AI call + full output cleanup pipeline |
+| `lib/promptBuilder.ts` | Dynamic system prompt builder per kid and session |
+| `lib/kidProfile.ts` | Firestore read/write for kid profiles and session memory |
+| `constants/prompts.ts` | Static `MITHU_SYSTEM_PROMPT` for anonymous sessions |
+| `hooks/useVoiceOutput.ts` | Browser TTS with Google voice selection |
+| `hooks/useSpeechRecognition.ts` | Browser STT with silence detection |
+| `hooks/useSession.ts` | Session lifecycle (turns, timer, message history) |
 
-## TODO / Future Improvements
-- [ ] Complete implementation of feedback persistence.
-- [ ] Optimize TTS for common Hindi words using Roman script spelling.
-- [ ] Add more interactive "story worlds" for Mithu to explore with the child.
+## What Is Not Built Yet
+
+- Parent dashboard (no UI — Firestore console used directly for now)
+- Parent authentication for web app
+- ElevenLabs TTS (blocked on free tier — browser TTS is primary)
+- WhatsApp session summary notifications
+- Analytics dashboard
+- Structured curriculum beyond prompt-level guidance
+
+## Known Learnings from Real Sessions
+
+- Open-ended questions → kids freeze → fixed with conversational two-option choices
+- Constant questioning breaks story → fixed with 2–3 turn storytelling rhythm before each choice
+- Stage directions `*chirps*` break TTS → stripped server-side in `/api/chat`
+- Double confirmation after choices → single `?` enforced server-side
+- Indian settings (haathi, mango tree, Diwali mela) land immediately with Indian kids
+- Age 4–5 need very short sentences (8 words max) — enforced in ageVoice()
