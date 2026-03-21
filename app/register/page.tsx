@@ -271,28 +271,31 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
     setError(null);
 
     try {
+      const payload = {
+        name: form.name.trim(),
+        ageYears: form.ageYears,
+        class: form.class,
+        language: form.language,
+        interests: form.interests,
+        whatsappNumber: form.whatsappNumber.trim() || null,
+      };
+
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          ageYears: form.ageYears,
-          class: form.class,
-          language: form.language,
-          interests: form.interests,
-          whatsappNumber: form.whatsappNumber.trim() || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Registration failed');
+        throw new Error(body.error || `Registration failed (${res.status})`);
       }
 
       const data: RegistrationResult = await res.json();
       onSuccess(data, form.name.trim());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong');
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg || 'Something went wrong. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }

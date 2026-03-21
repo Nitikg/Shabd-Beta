@@ -31,8 +31,10 @@ export async function POST(req: Request) {
 
   let body: RegisterBody;
   try {
-    body = await req.json();
-  } catch {
+    const text = await req.text();
+    body = JSON.parse(text);
+  } catch (e) {
+    console.error('Register parse error', e);
     return Response.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 

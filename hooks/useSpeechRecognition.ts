@@ -74,12 +74,21 @@ function createDeepgramRecorder(
     analyser.fftSize = 512;
     source.connect(analyser);
 
-    // Pick a supported mime type
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? 'audio/webm;codecs=opus'
-      : MediaRecorder.isTypeSupported('audio/mp4')
-        ? 'audio/mp4'
-        : '';
+    // Pick a supported mime type — order matters for cross-platform
+    // iOS Safari: supports audio/mp4, NOT audio/webm
+    // Android Chrome: supports audio/webm;codecs=opus
+    // Desktop Chrome: supports both
+    const mimeOptions = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/aac',
+      'audio/ogg;codecs=opus',
+      '',
+    ];
+    const mimeType = mimeOptions.find((m) =>
+      m === '' || MediaRecorder.isTypeSupported(m)
+    ) || '';
 
     mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
 
@@ -98,9 +107,14 @@ function createDeepgramRecorder(
 
       onInterim('Processing...');
 
-      const blob = new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
+      const actualMime = mediaRecorder?.mimeType || 'audio/mp4';
+      const ext = actualMime.includes('webm') ? 'webm'
+        : actualMime.includes('ogg') ? 'ogg'
+        : actualMime.includes('aac') ? 'aac'
+        : 'mp4';
+      const blob = new Blob(chunks, { type: actualMime });
       const formData = new FormData();
-      formData.append('audio', blob, 'recording.webm');
+      formData.append('audio', blob, `recording.${ext}`);
       formData.append('language', language);
 
       try {
