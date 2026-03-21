@@ -174,6 +174,69 @@ function SuccessScreen({
   );
 }
 
+function CustomInterestInput({
+  onAdd,
+  existingInterests,
+}: {
+  onAdd: (value: string) => void;
+  existingInterests: string[];
+}) {
+  const [value, setValue] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const submit = () => {
+    const trimmed = value.trim().toLowerCase();
+    if (!trimmed || existingInterests.includes(trimmed)) {
+      setValue('');
+      return;
+    }
+    onAdd(trimmed);
+    setValue('');
+    setOpen(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-2 rounded-full border border-dashed border-mithu-indigo/30 px-4 py-2 font-[var(--font-nunito)] text-sm text-mithu-indigo/60 transition hover:border-mithu-orange hover:text-mithu-orange"
+      >
+        + Add custom interest
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex gap-2">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && submit()}
+        placeholder="e.g. Robots, Cooking"
+        className="flex-1 rounded-2xl border border-mithu-indigo/15 bg-white px-3 py-2 font-[var(--font-nunito)] text-sm text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+        autoFocus
+      />
+      <button
+        type="button"
+        onClick={submit}
+        disabled={!value.trim()}
+        className="rounded-2xl bg-mithu-orange px-4 py-2 font-[var(--font-nunito)] text-sm font-semibold text-white shadow-soft transition active:scale-[0.99] disabled:opacity-50"
+      >
+        Add
+      </button>
+      <button
+        type="button"
+        onClick={() => { setOpen(false); setValue(''); }}
+        className="rounded-2xl border border-mithu-indigo/15 bg-white px-3 py-2 font-[var(--font-nunito)] text-sm text-mithu-indigo/60 transition"
+      >
+        Cancel
+      </button>
+    </div>
+  );
+}
+
 function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResult, name: string) => void }) {
   const [form, setForm] = useState<FormData>({
     name: '',
@@ -341,7 +404,26 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
                 </button>
               );
             })}
+            {/* Custom interests as chips */}
+            {form.interests
+              .filter((i) => !INTEREST_OPTIONS.map((o) => o.toLowerCase()).includes(i))
+              .map((custom) => (
+                <button
+                  key={custom}
+                  type="button"
+                  onClick={() => toggleInterest(custom)}
+                  className="rounded-full px-4 py-2 font-[var(--font-nunito)] text-sm font-medium bg-mithu-orange text-white shadow-soft transition"
+                >
+                  {custom}
+                </button>
+              ))}
           </div>
+          {form.interests.length < 3 && (
+            <CustomInterestInput
+              onAdd={(value) => toggleInterest(value)}
+              existingInterests={form.interests}
+            />
+          )}
         </div>
 
         {/* WhatsApp */}

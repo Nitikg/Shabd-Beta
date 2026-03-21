@@ -20,11 +20,12 @@
 - Landing page with language selection + mic permission
 
 ### Not Working / Missing
-- **Voice is robotic** — browser SpeechSynthesis, not warm enough for children
-- **iOS speech recognition broken** — Web Speech API unreliable on WebKit
-- **All 3 sessions feel identical** — no structured progression or age-band differentiation
-- **No parent registration UI** — kid profiles created manually in Firebase Console
-- **No admin dashboard** — raw Firestore JSON, no way to analyze 75 sessions
+- ~~**Voice is robotic**~~ Done (Phase 1)
+- ~~**iOS speech recognition broken**~~ Done (Phase 2)
+- ~~**All 3 sessions feel identical**~~ Done (Phase 3)
+- ~~**No parent registration UI**~~ Done (Phase 4)
+- ~~**No admin dashboard**~~ Done (Phase 5)
+- **No self-improving conversation quality** — prompts are static, no learning from actual sessions
 - **No analytics** — can't track completion rates, drop-offs, engagement
 
 ---
@@ -35,7 +36,7 @@
 |----------|--------|-----|
 | TTS | ElevenLabs `eleven_multilingual_v2` | Best Hinglish quality, already have API key, viable to ~2K kids/mo |
 | STT (Android/Desktop) | Browser Web Speech API | Free, works well on Chrome, `en-IN` / `hi-IN` locales |
-| STT (iOS fallback) | Deepgram server-side | $0.0043/min, handles Indian accent, MediaRecorder works on iOS |
+| STT (iOS fallback) | Deepgram server-side (raw fetch, no SDK) | $0.0043/min, handles Indian accent, MediaRecorder works on iOS |
 | AI Model | Claude 3 Haiku via OpenRouter | Already working, cheap, fast, follows prompt rules well |
 | Database | Firestore | Already set up, kid profiles + sessions + feedback |
 | Hosting | Vercel (free tier) | Already deployed at shabd-beta.vercel.app |
@@ -43,252 +44,288 @@
 
 ---
 
-## Phase 1: Voice Upgrade — ElevenLabs TTS (Day 1)
+## Phase 1: Voice Upgrade -- ElevenLabs TTS (Day 1) [DONE]
 
 **Goal:** Replace robotic browser voice with warm, natural Hinglish voice.
 
 ### Tasks
-- [ ] **1.1** Upgrade ElevenLabs account from free to Starter/Creator plan
-- [ ] **1.2** Select best voice for Mithu — test `eleven_multilingual_v2` with Hindi, English, and Hinglish sample sentences
-- [ ] **1.3** Update `/api/tts` route: confirm it streams audio correctly, add error handling for rate limits
-- [ ] **1.4** Update `useVoiceOutput` hook: call `/api/tts` instead of browser SpeechSynthesis, play returned audio via `<audio>` element or Web Audio API
-- [ ] **1.5** Keep browser SpeechSynthesis as silent fallback if ElevenLabs API fails
-- [ ] **1.6** Test voice output on: Android Chrome, iOS Safari, Desktop Chrome
-- [ ] **1.7** Tune `rate` and `stability` parameters for child-friendly delivery (slightly slower, warm tone)
+- [x] **1.1** Upgrade ElevenLabs account from free to Starter/Creator plan
+- [x] **1.2** Select best voice for Mithu -- test `eleven_multilingual_v2` with Hindi, English, and Hinglish sample sentences
+- [x] **1.3** Update `/api/tts` route: added `runtime = 'nodejs'`, confirmed streaming works
+- [x] **1.4** Rewrote `useVoiceOutput` hook: tries ElevenLabs first via `/api/tts`, plays audio via shared `Audio` element, falls back to browser SpeechSynthesis silently
+- [x] **1.5** Browser SpeechSynthesis kept as silent fallback if ElevenLabs API fails
+- [x] **1.6** Tested and deployed -- voice works well
+- [x] **1.7** Added `stoppedRef` to prevent race conditions on stop during playback
 
-### Success Criteria
-- Mithu sounds warm and natural in both Hindi and English
-- Audio plays reliably on Android Chrome and iOS Safari
-- Fallback to browser TTS works if API fails (no silent failures)
+### Delivered
+- `hooks/useVoiceOutput.ts` -- complete rewrite with ElevenLabs primary + browser fallback
+- `app/api/tts/route.ts` -- added runtime export
+- Zero changes to play page (same `voice.play(text, { language })` interface)
 
 ---
 
-## Phase 2: iOS Speech Recognition Fix — Deepgram Fallback (Day 2)
+## Phase 2: iOS Speech Recognition -- Deepgram Fallback (Day 2) [DONE]
 
-**Goal:** Make speech input work on iOS devices (some beta parents will use iPhones).
+**Goal:** Make speech input work on iOS devices.
 
 ### Tasks
-- [ ] **2.1** Create `/api/stt` route using Deepgram SDK (`@deepgram/sdk`)
-  - Accept audio blob (WebM/MP4)
-  - Return `{ transcript: string }`
-  - Use `model: "nova-2"`, `language: "hi"` with `detect_language: true`
-- [ ] **2.2** Create `useAudioRecorder` hook using MediaRecorder API
-  - Start/stop recording
-  - Return audio blob on stop
-  - Works on iOS Safari (MediaRecorder supported since iOS 14.3)
-- [ ] **2.3** Update `useSpeechRecognition` hook with platform detection
-  - If `window.SpeechRecognition` available and reliable → use browser API (Android/Desktop)
-  - If not (iOS) → use MediaRecorder + `/api/stt` Deepgram route
+- [x] **2.1** Created `/api/stt` route using Deepgram REST API (raw fetch, no SDK dependency)
+  - Accepts audio blob via FormData
+  - Uses `nova-3` model with `detect_language: true`
+  - Supports Hindi and English
+- [x] **2.2** Rewrote `useSpeechRecognition` hook with platform auto-detection
+  - iOS detected -> MediaRecorder + `/api/stt` (Deepgram path)
+  - Android/Desktop -> Web Speech API (existing path)
   - Same external interface: `startListening()`, `stopListening()`, `transcript`, `isListening`
-- [ ] **2.4** Add silence detection for Deepgram path (analyze audio levels, auto-stop after 2s silence)
-- [ ] **2.5** Test on iOS Safari and iOS Chrome with Hindi and English speech
-- [ ] **2.6** Remove iOS warning banner from landing page (no longer needed)
+- [x] **2.3** Added silence detection for Deepgram path via audio level analysis (RMS threshold + 2s timeout)
+- [x] **2.4** Removed iOS warning from landing page (no longer needed)
+- [x] **2.5** Fixed pre-existing smart quote encoding issue in `app/page.tsx`
+- [x] **2.6** Updated `.env.local.example` with `DEEPGRAM_API_KEY`
 
-### Success Criteria
-- Speech recognition works on iOS Safari and iOS Chrome
-- Same 2-second silence auto-stop behavior as browser API path
-- No visible difference in UX between Android and iOS
+### Delivered
+- `app/api/stt/route.ts` -- new Deepgram STT endpoint
+- `hooks/useSpeechRecognition.ts` -- complete rewrite with dual-path
+- `app/page.tsx` -- cleaned up, iOS warning removed
 
 ---
 
-## Phase 3: Session Progression Prompts (Day 3)
+## Phase 3: Session Progression Prompts (Day 3) [DONE]
 
 **Goal:** Make each of the 3 sessions feel distinct and progressively engaging, adapted to child's age.
 
 ### Tasks
-- [ ] **3.1** Define 3 age bands with distinct interaction styles:
+- [x] **3.1** Defined 3 age bands with distinct interaction styles:
 
-  | Age Band | Vocabulary | Story Complexity | Maths Element | Session 1 Length |
-  |----------|-----------|-----------------|---------------|-----------------|
-  | 4-5 yrs | Very simple, repetitive, musical | Animal friends, sensory (colors, sounds) | Counting 1-3 | 5 turns / 3 min |
-  | 6-7 yrs | Simple sentences, some compound | Adventure with branching choices | Addition, simple patterns | 7 turns / 4 min |
-  | 8-10 yrs | Grade 2-3, can handle longer | Mystery/quest with inference | Word puzzles, basic multiplication | 10 turns / 5 min |
+  | Age Band | Vocabulary | Session 1 Length |
+  |----------|-----------|-----------------|
+  | 4-5 yrs | Very simple, repetitive, musical, rhyming | 5 turns / 3 min |
+  | 6-7 yrs | Simple, compound sentences, descriptive | 7 turns / 4 min |
+  | 8-10 yrs | Grade 2-3, longer sentences, puzzles | 8 turns / 4 min |
 
-- [ ] **3.2** Rewrite `promptBuilder.ts` with session-specific arc instructions:
+- [x] **3.2** Rewrote `promptBuilder.ts` with session-specific arc instructions:
+  - Session 1: Short warm-up, mini-story, end with "come back for more"
+  - Session 2: Full story with Session 1 callbacks, ends on cliffhanger
+  - Session 3: Grand finale, child is the hero, emotional farewell
+- [x] **3.3** Added 8 interest-specific story worlds with named characters (space, dinosaurs, trains, food, art, music, sports, superheroes)
+- [x] **3.4** Updated `useSession` hook to accept dynamic `SessionLimits` (maxTurns, maxSeconds)
+- [x] **3.5** Updated play page to compute session config from kid profile and pass to `useSession` and `ProgressDots`
+- [x] **3.6** Improved `generateSessionMemory` to capture Q&A pairs instead of raw user text
+- [x] **3.7** Added `getSessionConfig()` export for play page to use
 
-  **Session 1 (Warm-up / First Impression)**
-  - Shorter session (turn count based on age band)
-  - Mithu introduces itself, learns child's name
-  - Quick mini-story using child's favorite interest
-  - Ends with excitement: "Next time, I have an even bigger story for you!"
-  - Goal: child asks parent "When can I talk to Mithu again?"
-
-  **Session 2 (Core Story)**
-  - Full-length session (10 turns / 5 min)
-  - Callbacks to Session 1 choices ("Remember the mango tree? Something magical happened there!")
-  - Deeper story with 3-4 choice points
-  - Introduces light learning element (counting, patterns, vocabulary)
-  - Ends on a cliffhanger: "But what happened next? We will find out next time!"
-
-  **Session 3 (Grand Finale)**
-  - Full-length session (10 turns / 5 min)
-  - Resolves Session 2 cliffhanger
-  - Child is the hero who saves the day
-  - Callbacks to all previous choices and interests
-  - Warm farewell: "You are one of the bravest friends Mithu has ever had!"
-  - Goal: parent sees child emotionally engaged, attached to Mithu
-
-- [ ] **3.3** Add interest-specific story seeds to prompt (not generic jungle for everyone):
-
-  | Interest | Story World | Characters |
-  |----------|------------|------------|
-  | Animals | Magical jungle | Haathi the elephant, Bandar the monkey |
-  | Space | Mithu's sky journey | Tara the star, Chand the moon |
-  | Food | Mango tree festival | Chef Bandar, Mithai the sweet-maker |
-  | Cars/Trains | Railway adventure | Chhuk-Chhuk the train, Driver Uncle |
-  | Dinosaurs | Dino Island | Raju the friendly dinosaur |
-  | Art/Colors | Rainbow village | Rangoli the painter |
-
-- [ ] **3.4** Update `useSession` hook to accept dynamic turn limits based on session number and age
-- [ ] **3.5** Update session timer to use dynamic max duration
-- [ ] **3.6** Test prompt quality: run 5-6 simulated conversations via direct API calls, verify:
-  - Session 1 is noticeably shorter and simpler
-  - Session 2 references Session 1 memory
-  - Session 3 feels like a grand conclusion
-  - Age 4-5 responses are genuinely simpler than age 8-10
-  - Each interest produces a different story world
-
-### Success Criteria
-- A parent watching all 3 sessions can clearly see progression
-- A 4-year-old's session feels different from an 8-year-old's
-- Story callbacks ("Remember when you chose the mango?") work across sessions
-- Session 1 is short enough that a 4-year-old finishes without losing interest
+### Delivered
+- `lib/promptBuilder.ts` -- full rewrite (age bands, story worlds, session arcs, smart memory)
+- `hooks/useSession.ts` -- dynamic limits, exposes `maxTurns`
+- `app/play/page.tsx` -- imports `getSessionConfig`, passes dynamic limits
 
 ---
 
-## Phase 4: Parent Registration UI (Day 4)
+## Phase 4: Parent Registration UI (Day 4) [DONE]
 
 **Goal:** Simple mobile form so you can register kids during a phone call with parents.
 
 ### Tasks
-- [ ] **4.1** Create `/register` page with access code gate
-  - Simple code input (e.g., "MITHU2026") — not a login system, just a gate
-  - Store code in `sessionStorage` so parent doesn't re-enter on same session
+- [x] **4.1** Created `/register` page with access code gate ("MITHU2026", stored in sessionStorage)
+- [x] **4.2** Built registration form: name, age (4-10), class, language toggle, interest chips (1-3), WhatsApp number
+- [x] **4.3** On submit: generates kid ID, creates Firestore doc, shows success with session link
+- [x] **4.4** Copy Link button + Share on WhatsApp button with pre-filled message template
+- [x] **4.5** Register Another Child button to reset form
 
-- [ ] **4.2** Build registration form (mobile-first, single page):
-  - Child's first name (text input, required)
-  - Age (dropdown: 4, 5, 6, 7, 8, 9, 10)
-  - Class (dropdown: Nursery, LKG, UKG, 1st, 2nd, 3rd, 4th)
-  - Preferred language (toggle: English / Hindi / Hinglish)
-  - Interests (visual grid, select 2-3):
-    - Animals, Space, Food/Cooking, Cars/Trains, Dinosaurs, Art/Colors, Music/Dance, Sports, Superheroes
-  - Parent's WhatsApp number (for sharing session link)
-
-- [ ] **4.3** On submit:
-  - Generate unique kid ID (e.g., `kid_arjun_7_abc123`)
-  - Create Firestore document in `kids/{kidId}`
-  - Show success screen with:
-    - Unique session link: `shabd-beta.vercel.app/play?kid={kidId}`
-    - "Copy Link" button
-    - "Share on WhatsApp" button (pre-filled message with link + instructions)
-    - QR code for the link (optional, nice-to-have)
-
-- [ ] **4.4** Pre-filled WhatsApp message template:
-  ```
-  Hi! Here's {child_name}'s personal link to talk to Mithu, the story parrot:
-
-  {link}
-
-  How to use:
-  1. Open the link on Chrome (Android) or Safari (iPhone)
-  2. Allow microphone when asked
-  3. Tap "Start" and hand the phone to {child_name}
-  4. Sit nearby but let them lead the conversation
-  5. After the session, you'll see a short feedback form
-
-  {child_name} gets 3 story sessions with Mithu. Have fun!
-  ```
-
-- [ ] **4.5** Handle edge cases:
-  - Duplicate name check (show warning, allow override — siblings may share names)
-  - Form validation (all required fields)
-  - Network error handling (retry button)
-
-### Success Criteria
-- You can register a kid in under 60 seconds during a phone call
-- Parent receives a WhatsApp message with clear instructions
-- Link works immediately after registration
+### Delivered
+- `app/register/page.tsx` -- complete registration flow
+- `app/api/register/route.ts` -- Firestore kid creation endpoint
 
 ---
 
-## Phase 5: Admin Dashboard (Day 5)
+## Phase 5: Admin Dashboard (Day 5) [DONE]
 
 **Goal:** See all beta data at a glance, drill into individual sessions, export for analysis.
 
 ### Tasks
-- [ ] **5.1** Create `/admin` page with password gate (separate from registration code)
+- [x] **5.1** Created `/admin` page with password gate ("MITHU_ADMIN_2026")
+- [x] **5.2** Overview panel: total kids, total sessions, avg star rating, completion rate, top 3 feedback chips
+- [x] **5.3** Kids table: name, age, sessions (color-coded), avg stars, last session -- expandable rows
+- [x] **5.4** Session detail view: full transcript, metadata, feedback chips + open text
+- [x] **5.5** Export CSV: one row per session with all kid + session + feedback data
+- [x] **5.6** Created single `/api/admin/data` route (password via Authorization header)
 
-- [ ] **5.2** Overview panel:
-  - Total kids registered
-  - Total sessions completed (out of possible 75)
-  - Sessions today
-  - Average star rating (with trend)
-  - Top 3 feedback chips (most selected)
-  - Completion rate (sessions that reached turn 5+ / total sessions)
-
-- [ ] **5.3** Kids table:
-  - Columns: Name, Age, Language, Sessions Done (0/3, 1/3, 2/3, 3/3), Last Session Date, Avg Stars
-  - Click row → expand to show all sessions
-  - Color code: green (3/3 done), yellow (in progress), red (0/3, not started)
-
-- [ ] **5.4** Session detail view:
-  - Full transcript (Mithu said / Child said, alternating)
-  - Session metadata: duration, turn count, language used
-  - Feedback: stars, chips selected, open text
-  - Flags: short session (< 3 turns), no feedback submitted, errors
-
-- [ ] **5.5** Export functionality:
-  - "Export All" button → downloads CSV with:
-    - Kid name, age, class, interests, language
-    - Per-session: duration, turns, star rating, chips, open text
-  - Useful for investor deck, analysis spreadsheet
-
-- [ ] **5.6** Create `/api/admin/overview` and `/api/admin/kids` server routes
-  - Password verified via header (simple, not a full auth system)
-  - Firestore queries with proper indexing
-
-### Success Criteria
-- You can see at a glance: how many kids have completed sessions, what the average rating is
-- You can read any session's full transcript
-- You can export all data to CSV for your analysis
+### Delivered
+- `app/admin/page.tsx` -- full dashboard with overview, table, drill-down, CSV export
+- `app/api/admin/data/route.ts` -- combined data endpoint
 
 ---
 
-## Phase 6: Testing + Tuning (Day 6)
+## Phase 6: Smart Session Memory + Testing (Day 6)
 
-**Goal:** Test complete flow with real children, fix issues, tune prompts.
+**Goal:** Build self-improving conversation quality via AI-powered session analysis, then test complete flow with real children.
 
-### Tasks
-- [ ] **6.1** Prepare test matrix:
+### Part A: Smart Session Analyzer
+
+**Why:** Current session memory is a simple string concatenation of what the kid said. It carries facts but no insight. The next session's prompt doesn't know if the kid was engaged or bored, if they preferred Hindi or English, or which story moment worked best. This limits how well Mithu can adapt across sessions.
+
+**What it does:** After each session is saved, an AI call analyzes the full transcript and produces a compact adaptation block (~50 tokens) that gets injected into the next session's prompt.
+
+**Cost/Latency Analysis:**
+
+| Item | Impact |
+|------|--------|
+| Extra AI call per session (Haiku, ~1K input tokens) | ~$0.005/session, ~$0.38 for 75 sessions |
+| Added prompt context for next session | +50-80 tokens, ~50ms latency (unnoticeable) |
+| Risk of prompt pollution | Low -- adaptation block is compact and non-contradictory |
+| Storage | One extra field per session doc in Firestore |
+
+#### Tasks
+
+- [ ] **6A.1** Create `lib/sessionAnalyzer.ts` with function `analyzeSession(kidName, ageYears, messages) -> SessionInsights`
+  - Input: full transcript (array of {role, content})
+  - Makes one Claude Haiku call via OpenRouter with a tight analysis prompt
+  - Analysis prompt asks for structured output:
+    ```
+    Analyze this conversation between Mithu (AI parrot) and {kidName} (age {age}).
+    Output EXACTLY this format, nothing else:
+
+    ENGAGEMENT: [high/medium/low]
+    LANGUAGE_PREFERENCE: [hindi/english/hinglish]
+    BEST_MOMENT: [one sentence describing which turn got the best response]
+    ADAPTATION: [2-3 short bullet points for improving the next session, max 40 words total]
+    ```
+  - Parse the structured response into a typed `SessionInsights` object:
+    ```typescript
+    type SessionInsights = {
+      engagement: 'high' | 'medium' | 'low';
+      languagePreference: 'hindi' | 'english' | 'hinglish';
+      bestMoment: string;
+      adaptationNotes: string;  // compact, max 40 words
+    };
+    ```
+
+- [ ] **6A.2** Update `/api/session` route to trigger analysis after save
+  - After successfully saving the session transcript to Firestore
+  - Call `analyzeSession()` (fire-and-forget, non-blocking)
+  - Save `SessionInsights` to the session document: `sessions/{sessionId}.insights`
+  - Also save the `adaptationNotes` to the kid doc: `kids/{kidId}/session{N}Insights`
+  - If analysis fails, log error but don't break the session save flow
+
+- [ ] **6A.3** Update `lib/kidProfile.ts`
+  - Add `getSessionInsights(kidId, sessionNumber)` function
+  - Returns the adaptation notes from the previous session
+
+- [ ] **6A.4** Update `lib/promptBuilder.ts` to inject adaptation notes
+  - In `buildSystemPrompt()`, after the session memory line, add:
+    ```
+    ADAPTATION (based on previous session analysis):
+    {adaptationNotes}
+    ```
+  - Only inject if `adaptationNotes` is non-empty
+  - Cap at 80 tokens to prevent prompt pollution
+
+- [ ] **6A.5** Update `/api/chat` route to fetch and pass insights
+  - When loading kid profile for session 2+, also fetch previous session's insights
+  - Pass to `buildSystemPrompt()` as additional parameter
+
+- [ ] **6A.6** Update admin dashboard to show session insights
+  - In session detail view, show: engagement level, language preference, best moment, adaptation notes
+  - Color-code engagement: green (high), yellow (medium), red (low)
+
+#### Data Flow
+
+```
+Session ends
+    |
+    v
+/api/session saves transcript to Firestore
+    |
+    v (async, non-blocking)
+sessionAnalyzer.analyzeSession() calls Claude Haiku
+    |
+    v
+Insights saved to:
+  - sessions/{sessionId}.insights (for admin dashboard)
+  - kids/{kidId}/session{N}Insights (for next session's prompt)
+    |
+    v (next session)
+/api/chat loads kid profile + previous insights
+    |
+    v
+buildSystemPrompt() injects adaptation notes
+    |
+    v
+Mithu's behavior is adapted for THIS specific child
+```
+
+#### Example
+
+Session 1 transcript:
+```
+Mithu: Namaste Arjun! Main hoon Mithu! What is your favourite animal?
+Arjun: sher
+Mithu: Wah, sher! A brave lion! Should we go to the jungle or the river?
+Arjun: (silence for 4 seconds) jungle
+Mithu: The jungle it is! A big mango tree was there. Should we climb it or sit under it?
+Arjun: chadho
+```
+
+Analysis output:
+```
+ENGAGEMENT: medium
+LANGUAGE_PREFERENCE: hindi
+BEST_MOMENT: Arjun responded most enthusiastically to the lion (sher), showing strong animal interest
+ADAPTATION:
+- Child responds in Hindi. Use more Hindi words naturally.
+- Give very concrete choices (climb/sit was better than jungle/river).
+- Child paused before "jungle" -- simpler words work better.
+```
+
+Session 2 prompt now includes:
+```
+ADAPTATION (based on previous session analysis):
+- Child responds in Hindi. Use more Hindi words naturally.
+- Give very concrete choices (climb/sit was better than jungle/river).
+- Child paused before "jungle" -- simpler words work better.
+```
+
+#### Success Criteria
+- Analysis runs automatically after each session save without blocking
+- Insights are visible in admin dashboard within 30 seconds of session end
+- Session 2+ prompts contain adaptation notes from previous session
+- Adaptation notes are compact (under 50 words) and actionable
+- No degradation of response quality or formatting compliance from added context
+
+### Part B: Manual Testing + Tuning
+
+- [ ] **6B.1** Prepare test matrix:
 
   | Test | Device | Browser | Age | Language | Expected |
   |------|--------|---------|-----|----------|----------|
   | 1 | Android mid-range | Chrome | 5 | Hindi | Full flow works |
   | 2 | iPhone | Safari | 7 | English | Deepgram fallback works |
-  | 3 | Desktop | Chrome | 4 | Hinglish | Short session works |
+  | 3 | Desktop | Chrome | 4 | Hinglish | Short session (5 turns) works |
   | 4 | Android high-end | Chrome | 9 | English | Complex story works |
   | 5 | iPad | Safari | 6 | Hindi | Full flow works |
 
-- [ ] **6.2** Run 3-5 real sessions with children (friends/family)
-- [ ] **6.3** After each session, check admin dashboard:
+- [ ] **6B.2** Run 3-5 real sessions with children (friends/family)
+- [ ] **6B.3** After each session, check admin dashboard:
   - Was transcript captured correctly?
   - Did Mithu follow prompt rules (single question, no actions, age-appropriate)?
-  - Did session memory work (for Session 2+)?
+  - Did session memory + insights carry forward (for Session 2+)?
   - Was feedback captured?
-- [ ] **6.4** Tune prompts based on observed issues:
-  - If child goes silent → adjust "confused" fallback response
-  - If Mithu talks too much → tighten sentence length rules
-  - If story is boring → add more dramatic choices
-  - If Hindi recognition is poor → consider Deepgram for all (not just iOS)
-- [ ] **6.5** Fix any bugs discovered
-- [ ] **6.6** Test parent flow end-to-end:
-  - Register on `/register` → receive WhatsApp link → open link → child plays → feedback → check admin
+  - Did session analyzer produce useful insights?
+- [ ] **6B.4** Tune prompts based on observed issues:
+  - If child goes silent -> adjust "confused" fallback response
+  - If Mithu talks too much -> tighten sentence length rules
+  - If story is boring -> add more dramatic choices
+  - If Hindi recognition is poor -> consider Deepgram for all (not just iOS)
+  - If adaptation notes are too vague -> tighten analyzer prompt
+- [ ] **6B.5** Fix any bugs discovered
+- [ ] **6B.6** Test parent flow end-to-end:
+  - Register on `/register` -> receive WhatsApp link -> open link -> child plays -> feedback -> check admin
+- [ ] **6B.7** Verify session analyzer insights appear in admin dashboard
 
 ### Success Criteria
 - 3+ real child sessions complete without errors
-- Admin dashboard shows correct data for all test sessions
-- At least one Session 2 successfully references Session 1 memory
+- Admin dashboard shows correct data + insights for all test sessions
+- At least one Session 2 successfully uses adaptation notes from Session 1
 - Prompts produce age-appropriate, engaging conversations
+- Analyzer produces actionable insights (not generic platitudes)
 
 ---
 
@@ -298,18 +335,18 @@
 
 ### Tasks
 - [ ] **7.1** Fix all bugs from Day 6 testing
-- [ ] **7.2** Final prompt polish based on test conversations
+- [ ] **7.2** Final prompt polish based on test conversations and analyzer insights
 - [ ] **7.3** Update landing page:
   - Remove "No login needed" (kid sessions need registration)
   - Add "Your session link was shared on WhatsApp" guidance for parents who land on `/`
   - Keep anonymous mode working (for demos / drop-ins)
-- [ ] **7.4** Prepare parent communication template (WhatsApp message you'll send):
+- [ ] **7.4** Prepare parent communication template (WhatsApp message you send):
   ```
   Hi [Parent Name]!
 
   Mithu is ready for [Child Name]!
 
-  I've created a personal story session — your child gets 3 conversations
+  I have created a personal story session -- your child gets 3 conversations
   with Mithu the parrot. Each one is 3-5 minutes.
 
   Link: [unique link]
@@ -318,8 +355,8 @@
   - Use Chrome (Android) or Safari (iPhone)
   - Allow microphone when asked
   - Let [Child Name] hold the phone and talk freely
-  - Sit nearby but don't coach — we want natural reactions
-  - After each session, there's a quick feedback form for you (1 min)
+  - Sit nearby but do not coach -- we want natural reactions
+  - After each session, there is a quick feedback form for you (1 min)
 
   Try Session 1 today or tomorrow. Sessions 2 and 3 unlock after each one.
 
@@ -333,38 +370,45 @@
 
 ### Success Criteria
 - First batch of 3-5 kids receive links and at least 2 complete Session 1
-- Admin dashboard shows real session data
+- Admin dashboard shows real session data with analyzer insights
 - No critical errors in Vercel logs
 - You have a clear tracking system for which kids are in which batch
 
 ---
 
-## Files That Will Be Modified
+## Files Modified / Created
 
 | File | Phase | Change |
 |------|-------|--------|
-| `hooks/useVoiceOutput.ts` | 1 | ElevenLabs audio playback |
-| `app/api/tts/route.ts` | 1 | Verify/update ElevenLabs integration |
-| `app/api/stt/route.ts` | 2 | **New** — Deepgram STT endpoint |
-| `hooks/useSpeechRecognition.ts` | 2 | Add Deepgram fallback path |
-| `hooks/useAudioRecorder.ts` | 2 | **New** — MediaRecorder wrapper |
-| `lib/promptBuilder.ts` | 3 | Session progression + age bands |
-| `hooks/useSession.ts` | 3 | Dynamic turn/time limits |
-| `components/SessionTimer.tsx` | 3 | Dynamic max time |
-| `app/register/page.tsx` | 4 | **New** — Registration form |
-| `app/api/register/route.ts` | 4 | **New** — Create kid in Firestore |
-| `app/admin/page.tsx` | 5 | **New** — Admin dashboard |
-| `app/api/admin/overview/route.ts` | 5 | **New** — Admin data endpoint |
-| `app/api/admin/kids/route.ts` | 5 | **New** — Kids + sessions endpoint |
-| `app/page.tsx` | 7 | Landing page copy updates |
-| `constants/prompts.ts` | 3 | May update anonymous prompt to match |
+| `hooks/useVoiceOutput.ts` | 1 | Rewritten -- ElevenLabs primary + browser fallback |
+| `app/api/tts/route.ts` | 1 | Added `runtime = 'nodejs'` |
+| `app/api/stt/route.ts` | 2 | **New** -- Deepgram STT endpoint (raw fetch) |
+| `hooks/useSpeechRecognition.ts` | 2 | Rewritten -- dual-path (Web Speech API + Deepgram) |
+| `app/page.tsx` | 2 | Cleaned up, iOS warning removed |
+| `.env.local.example` | 2 | Added `DEEPGRAM_API_KEY` |
+| `lib/promptBuilder.ts` | 3 | Rewritten -- age bands, story worlds, session arcs |
+| `hooks/useSession.ts` | 3 | Dynamic limits, exposes `maxTurns` |
+| `app/play/page.tsx` | 3 | Dynamic session config + ProgressDots max |
+| `app/register/page.tsx` | 4 | **New** -- Parent registration form |
+| `app/api/register/route.ts` | 4 | **New** -- Create kid in Firestore |
+| `app/admin/page.tsx` | 5 | **New** -- Admin dashboard |
+| `app/api/admin/data/route.ts` | 5 | **New** -- Combined admin data endpoint |
+| `lib/sessionAnalyzer.ts` | 6A | **New** -- AI-powered session analysis |
+| `lib/kidProfile.ts` | 6A | Add `getSessionInsights()` |
+| `app/api/session/route.ts` | 6A | Trigger analysis after save |
+| `app/api/chat/route.ts` | 6A | Fetch + pass insights to prompt builder |
 
-## New Dependencies
+## Future: Aggregate Learning (Post-MVP, after 50+ sessions)
 
-| Package | Phase | Purpose |
-|---------|-------|---------|
-| `@deepgram/sdk` | 2 | Server-side speech-to-text |
-| `qrcode.react` | 4 | QR code on registration success (optional) |
+Once enough sessions are collected, build:
+- **Pattern detection**: Analyze all session insights to find trends across kids
+  - e.g., "4-5 year olds disengage 40% faster with abstract choices"
+  - e.g., "Hindi-dominant kids respond 2x longer to animal sound stories"
+- **Prompt evolution dashboard**: Admin page that shows suggested prompt changes with supporting data
+- **A/B prompt testing**: Randomly assign kids to prompt variants, measure engagement differences
+- **Automated prompt refinement**: Feed aggregate insights into a meta-prompt that generates improved system prompts
+
+This requires 50+ sessions for statistical significance. Do not build before then.
 
 ---
 
@@ -375,9 +419,11 @@
 | ElevenLabs rate limit hit during batch testing | Low | High | Browser TTS fallback auto-activates |
 | Hindi speech recognition accuracy < 70% | Medium | High | Deepgram for all users (not just iOS), prompt assumes positive on unclear input |
 | Child disengages before turn 3 | Medium | Medium | Session 1 is shorter, prompt opens with excitement, choices given early |
-| Parent doesn't submit feedback | Medium | Medium | Feedback page is mandatory redirect, WhatsApp follow-up from you |
-| iOS MediaRecorder audio format incompatible with Deepgram | Low | Medium | Test Day 2, Deepgram accepts WebM/MP4/WAV |
+| Parent does not submit feedback | Medium | Medium | Feedback page is mandatory redirect, WhatsApp follow-up from you |
+| iOS MediaRecorder audio format incompatible with Deepgram | Low | Medium | Test Day 6, Deepgram accepts WebM/MP4/WAV |
 | Firestore free tier limits hit | Very Low | Low | 75 sessions + 25 kids well within free tier (50K reads/day) |
+| Session analyzer produces vague/unhelpful insights | Medium | Low | Tight analysis prompt with structured output, manual review during testing |
+| Adaptation notes contradict base prompt rules | Low | Medium | Cap at 80 tokens, add "never override CRITICAL OUTPUT RULES" guard |
 
 ---
 
@@ -393,3 +439,5 @@
 | Session 3 return rate | > 50% of kids do Session 3 | Firestore sessionCount |
 | Parent NPS (from open text) | Net positive sentiment | Manual review |
 | Total sessions completed | > 50 out of 75 possible | Admin dashboard |
+| Analyzer insight quality | > 70% of insights are actionable | Manual review of first 10 sessions |
+| Session 2+ adaptation visible | Mithu noticeably adapts behavior | Compare Session 1 vs 2 transcripts |
