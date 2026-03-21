@@ -8,9 +8,10 @@ import { ChildTranscript } from '@/components/ChildTranscript';
 import { SessionTimer } from '@/components/SessionTimer';
 import { ProgressDots } from '@/components/ProgressDots';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import { useSession } from '@/hooks/useSession';
+import { useSession, type SessionLimits } from '@/hooks/useSession';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
 import type { KidProfile } from '@/lib/kidProfile';
+import { getSessionConfig } from '@/lib/promptBuilder';
 
 const MAX_SESSIONS = 3;
 
@@ -42,7 +43,8 @@ type UiStatus = 'ready' | 'listening' | 'thinking' | 'speaking' | 'ended';
 export default function PlayPage() {
   const router = useRouter();
   const [language, setLanguage] = useState<'en' | 'hi'>(getLang);
-  const session = useSession(language);
+  const [sessionLimits, setSessionLimits] = useState<SessionLimits | undefined>(undefined);
+  const session = useSession(language, sessionLimits);
   const voice = useVoiceOutput();
   const speech = useSpeechRecognition(language);
 
@@ -98,7 +100,9 @@ export default function PlayPage() {
         }
 
         setKid(profile);
-        setSessionNumber(profile.sessionCount + 1);
+        const sNum = profile.sessionCount + 1;
+        setSessionNumber(sNum);
+        setSessionLimits(getSessionConfig(profile.ageYears, sNum));
 
         // Use kid's preferred language
         const lang = profile.language === 'hi' ? 'hi' : 'en';
@@ -296,7 +300,7 @@ export default function PlayPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <SessionTimer remainingSeconds={session.remainingSeconds} />
-            <ProgressDots turnCount={session.turnCount} />
+            <ProgressDots turnCount={session.turnCount} max={session.maxTurns} />
           </div>
           <div className="flex items-center gap-2">
             {kid && (
