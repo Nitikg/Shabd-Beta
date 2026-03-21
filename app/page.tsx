@@ -3,24 +3,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MithuCharacter } from '@/components/MithuCharacter';
-import { isIOS } from '@/lib/utils';
-
+ 
 const COPY = {
   en: {
-    headline: "Namasté! I'm Mithu",
-    sub: "Your child's curious AI friend — tell me a story, ask me anything!",
-    cta: 'Start Talking',
-    foot: 'No login needed · Free to try · For ages 4–8',
-    mic: 'Mithu needs to hear your child’s voice. Please allow microphone access.',
-    ios: 'For the best experience, please open this on Android Chrome or desktop Chrome.'
+    headline: "Namaste! I'm Mithu",
+    sub: "Your child's curious AI friend - tell me a story, ask me anything!",
+    cta: "Start Talking",
+    foot: "No login needed \u00b7 Free to try \u00b7 For ages 4-8",
+    mic: "Mithu needs to hear your child's voice. Please allow microphone access.",
   },
   hi: {
-    headline: 'Namasté! मैं Mithu हूँ',
-    sub: 'मैं आपके बच्चे का जिज्ञासु AI दोस्त हूँ — कहानी सुनाओ, कुछ भी पूछो!',
-    cta: 'Mithu से बात शुरू करें',
-    foot: 'कोई लॉगिन नहीं · मुफ्त · उम्र 4–8',
-    mic: 'Mithu को आपके बच्चे की आवाज़ सुननी है। कृपया माइक्रोफोन की अनुमति दें।',
-    ios: 'बेहतर अनुभव के लिए Android Chrome या desktop Chrome पर खोलें।'
+    headline: "Namaste! \u092e\u0948\u0902 Mithu \u0939\u0942\u0901",
+    sub: "\u092e\u0948\u0902 \u0906\u092a\u0915\u0947 \u092c\u091a\u094d\u091a\u0947 \u0915\u093e \u091c\u093f\u091c\u094d\u091e\u093e\u0938\u0941 AI \u0926\u094b\u0938\u094d\u0924 \u0939\u0942\u0901 - \u0915\u0939\u093e\u0928\u0940 \u0938\u0941\u0928\u093e\u0913, \u0915\u0941\u091b \u092d\u0940 \u092a\u0942\u091b\u094b!",
+    cta: "Mithu \u0938\u0947 \u092c\u093e\u0924 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902",
+    foot: "\u0915\u094b\u0908 \u0932\u0949\u0917\u093f\u0928 \u0928\u0939\u0940\u0902 \u00b7 \u092e\u0941\u092b\u094d\u0924 \u00b7 \u0909\u092e\u094d\u0930 4-8",
+    mic: "Mithu \u0915\u094b \u0906\u092a\u0915\u0947 \u092c\u091a\u094d\u091a\u0947 \u0915\u0940 \u0906\u0935\u093e\u091c\u093c \u0938\u0941\u0928\u0928\u0940 \u0939\u0948\u0964 \u0915\u0943\u092a\u092f\u093e \u092e\u093e\u0907\u0915\u094d\u0930\u094b\u092b\u094b\u0928 \u0915\u0940 \u0905\u0928\u0941\u092e\u0924\u093f \u0926\u0947\u0902\u0964",
   }
 };
 
@@ -41,6 +38,7 @@ async function requestMic() {
 
 function playTinyChime() {
   if (typeof window === 'undefined') return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioCtx) return;
   const ctx = new AudioCtx();
@@ -73,7 +71,7 @@ export default function HomePage() {
   const start = async () => {
     setMicError(null);
     try {
-      playTinyChime(); // user gesture
+      playTinyChime();
       await requestMic();
       localStorage.setItem('mithu:lang', lang);
       router.push('/play');
@@ -104,14 +102,14 @@ export default function HomePage() {
                 lang === 'hi' ? 'bg-mithu-orange text-white' : 'text-mithu-indigo/70'
               }`}
             >
-              हिंदी
+              {"\u0939\u093f\u0902\u0926\u0940"}
             </button>
           </div>
         </header>
 
         <div className="mithu-card px-5 py-6 text-center">
           <MithuCharacter state="idle" className="mb-3" />
-          <div className="font-[var(--font-baloo)] text-2xl">{t.headline} 🦜</div>
+          <div className="font-[var(--font-baloo)] text-2xl">{t.headline} {"\ud83e\udd9c"}</div>
           <div className="mt-2 font-[var(--font-nunito)] text-base text-mithu-indigo/80">{t.sub}</div>
 
           <button
@@ -119,14 +117,10 @@ export default function HomePage() {
             onClick={start}
             className="mt-5 w-full rounded-3xl bg-mithu-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99]"
           >
-            {t.cta} 🎙
+            {t.cta} {"\ud83c\udf99"}
           </button>
 
           <div className="mt-3 text-xs font-[var(--font-nunito)] text-mithu-indigo/60">{t.foot}</div>
-
-          {isIOS() ? (
-            <div className="mt-3 text-xs font-[var(--font-nunito)] text-mithu-indigo/60">{t.ios}</div>
-          ) : null}
 
           {micError ? <div className="mt-3 text-sm text-red-600">{micError}</div> : null}
         </div>
@@ -134,4 +128,3 @@ export default function HomePage() {
     </main>
   );
 }
-
