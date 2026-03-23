@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   }
 
   const kidId = generateId(name.trim());
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shabd-beta.vercel.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shabd-web-beta.vercel.app';
 
   try {
     await getDb().collection('kids').doc(kidId).set({
