@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MithuCharacter, type MithuState } from '@/components/MithuCharacter';
+import { KikiCharacter, type KikiState } from '@/components/KikiCharacter';
 import { SpeechBubble } from '@/components/SpeechBubble';
 import { ChildTranscript } from '@/components/ChildTranscript';
 import { SessionTimer } from '@/components/SessionTimer';
@@ -17,14 +17,14 @@ const MAX_SESSIONS = 3;
 
 const OPENERS: Record<'en' | 'hi', string[]> = {
   en: [
-    "Hi there! I am Mithu! What is your name? I love meeting new friends!",
-    "Namaste! I am Mithu the parrot! Can you tell me what your favourite animal is?",
-    "Hello hello! I am Mithu! Shall we tell a story together today?"
+    "Hi there! I am Kiki! What is your name? I love meeting new friends!",
+    "Namaste! I am Kiki! Can you tell me what your favourite animal is?",
+    "Hello hello! I am Kiki! Shall we tell a story together today?"
   ],
   hi: [
-    "Namaste! Main hoon Mithu! Tumhara naam kya hai? Mujhe naye doston se milna bahut pasand hai!",
-    "Arre wah! Main hoon Mithu, ek pyara sa parrot! Tumhara favourite animal kaun sa hai?",
-    "Hello hello! Main hoon Mithu! Aaj hum saath mein ek kahaani sunaayein?"
+    "Namaste! Main hoon Kiki! Tumhara naam kya hai? Mujhe naye doston se milna bahut pasand hai!",
+    "Arre wah! Main hoon Kiki! Tumhara favourite animal kaun sa hai?",
+    "Hello hello! Main hoon Kiki! Aaj hum saath mein ek kahaani sunaayein?"
   ]
 };
 
@@ -34,7 +34,7 @@ function pick<T>(arr: T[]) {
 
 function getLang(): 'en' | 'hi' {
   if (typeof window === 'undefined') return 'en';
-  const v = localStorage.getItem('mithu:lang');
+  const v = localStorage.getItem('kiki:lang');
   return v === 'hi' ? 'hi' : 'en';
 }
 
@@ -50,7 +50,7 @@ export default function PlayPage() {
 
   const [status, setStatus] = useState<UiStatus>('ready');
   const [hasStarted, setHasStarted] = useState(false);
-  const [mithuText, setMithuText] = useState('');
+  const [kikiText, setKikiText] = useState('');
   const [childText, setChildText] = useState('');
   const [parentError, setParentError] = useState<string | null>(null);
 
@@ -107,14 +107,14 @@ export default function PlayPage() {
         // Use kid's preferred language
         const lang = profile.language === 'hi' ? 'hi' : 'en';
         setLanguage(lang);
-        localStorage.setItem('mithu:lang', lang);
+        localStorage.setItem('kiki:lang', lang);
 
         setKidLoading(false);
       })
       .catch(() => setKidLoading(false));
   }, [router]);
 
-  const mithuState: MithuState = useMemo(() => {
+  const kikiState: KikiState = useMemo(() => {
     if (status === 'listening') return 'listening';
     if (status === 'thinking') return 'thinking';
     if (status === 'speaking') return 'speaking';
@@ -123,12 +123,12 @@ export default function PlayPage() {
 
   const safeSpeak = async (text: string) => {
     setStatus('speaking');
-    setMithuText(text);
+    setKikiText(text);
     session.addMessage({ role: 'assistant', content: text });
     const result = await voice.play(text, { language });
     if (!result.ok) {
       setParentError(
-        'Mithu is having trouble playing sound in this browser. For best experience, try Android Chrome or desktop Chrome.'
+        'Kiki is having trouble playing sound in this browser. For best experience, try Android Chrome or desktop Chrome.'
       );
     }
     if (session.isEnded) return;
@@ -165,7 +165,7 @@ export default function PlayPage() {
         const text = await callChat([{ role: 'user', content: '[session started]' }]);
         await safeSpeak(text);
       } catch {
-        await safeSpeak(`Namaste ${kid.name}! Main hoon Mithu! Aaj hum ek kahaani sunaate hain!`);
+        await safeSpeak(`Namaste ${kid.name}! Main hoon Kiki! Aaj hum ek kahaani sunaate hain!`);
       }
     } else {
       // Anonymous session: use hardcoded opener
@@ -274,28 +274,28 @@ export default function PlayPage() {
   const endNow = () => session.endSession();
 
   const statusText = !hasStarted
-    ? 'Tap once to start talking to Mithu.'
+    ? 'Tap once to start talking to Kiki.'
     : status === 'listening'
-      ? 'Mithu is listening…'
+      ? 'Kiki is listening…'
       : status === 'thinking'
-        ? 'Mithu is thinking…'
+        ? 'Kiki is thinking…'
         : status === 'speaking'
-          ? 'Mithu is speaking…'
+          ? 'Kiki is speaking…'
           : status === 'ended'
             ? 'Session ending…'
-            : 'Mithu will listen to you…';
+            : 'Kiki will listen to you…';
 
   // Show nothing while checking kid profile to avoid flash of wrong UI
   if (kidLoading) {
     return (
-      <main className="mithu-gradient-bg min-h-screen flex items-center justify-center">
-        <div className="font-[var(--font-baloo)] text-mithu-indigo/60 text-lg">Loading…</div>
+      <main className="kiki-gradient-bg min-h-screen flex items-center justify-center">
+        <div className="font-[var(--font-baloo)] text-kiki-indigo/60 text-lg">Loading…</div>
       </main>
     );
   }
 
   return (
-    <main className="mithu-gradient-bg min-h-screen px-5 py-6">
+    <main className="kiki-gradient-bg min-h-screen px-5 py-6">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-md flex-col">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ export default function PlayPage() {
           </div>
           <div className="flex items-center gap-2">
             {kid && (
-              <span className="font-[var(--font-nunito)] text-sm text-mithu-indigo/60">
+              <span className="font-[var(--font-nunito)] text-sm text-kiki-indigo/60">
                 {kid.name} · Session {sessionNumber}
               </span>
             )}
@@ -321,23 +321,23 @@ export default function PlayPage() {
 
         <div className="mt-6 flex flex-1 flex-col items-center gap-4">
           <button type="button" onClick={handleStart} className="flex flex-col items-center gap-3">
-            <MithuCharacter state={mithuState} className="scale-[1.08]" />
+            <KikiCharacter state={kikiState} className="scale-[1.08]" />
             {!hasStarted && (
-              <span className="rounded-3xl bg-mithu-orange px-5 py-2 text-sm font-[var(--font-baloo)] text-white shadow-soft">
+              <span className="rounded-3xl bg-kiki-orange px-5 py-2 text-sm font-[var(--font-baloo)] text-white shadow-soft">
                 Tap to begin ✨
               </span>
             )}
           </button>
-          <SpeechBubble text={mithuText} />
+          <SpeechBubble text={kikiText} />
           <ChildTranscript text={childText} />
           {parentError ? (
-            <div className="mithu-card w-full max-w-md px-4 py-3 text-sm text-red-700">
+            <div className="kiki-card w-full max-w-md px-4 py-3 text-sm text-red-700">
               {parentError}
             </div>
           ) : null}
         </div>
 
-        <div className="sticky bottom-0 pb-4 pt-3 text-center text-sm font-[var(--font-nunito)] text-mithu-indigo/70">
+        <div className="sticky bottom-0 pb-4 pt-3 text-center text-sm font-[var(--font-nunito)] text-kiki-indigo/70">
           {statusText}
         </div>
       </div>

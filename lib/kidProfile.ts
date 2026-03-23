@@ -36,7 +36,7 @@ export async function incrementSessionCount(kidId: string): Promise<void> {
   }
 }
 
-// Called after session 1 ends — saves a short summary Mithu can reference in session 2
+// Called after session 1 ends — saves a short summary Kiki can reference in session 2
 export async function saveSessionSummary(kidId: string, sessionNumber: number, summary: string): Promise<void> {
   if (!isFirebaseConfigured()) return;
   try {

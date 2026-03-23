@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { FeedbackForm } from '@/components/FeedbackForm';
-import { MithuCharacter } from '@/components/MithuCharacter';
+import { KikiCharacter } from '@/components/KikiCharacter';
 import { safeJsonParse } from '@/lib/utils';
 import type { SessionSummary } from '@/hooks/useSession';
 
 function makeShareText(link: string) {
-  return `I just tested Mithu — an AI voice companion for kids! My child actually loved talking to it 😮 Try it free here: ${link}`;
+  return `I just tested Kiki — an AI voice companion for kids! My child actually loved talking to it 😮 Try it free here: ${link}`;
 }
 
 export default function FeedbackPage() {
@@ -15,7 +15,7 @@ export default function FeedbackPage() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('mithu:session') : null;
+    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('kiki:session') : null;
     const parsed = safeJsonParse<SessionSummary>(raw);
     setSummary(parsed);
   }, []);
@@ -40,16 +40,16 @@ export default function FeedbackPage() {
   };
 
   return (
-    <main className="mithu-gradient-bg min-h-screen px-5 py-8">
+    <main className="kiki-gradient-bg min-h-screen px-5 py-8">
       <div className="mx-auto flex max-w-md flex-col gap-5">
-        <div className="mithu-card px-5 py-6 text-center">
-          <MithuCharacter state="idle" className="mb-2" />
+        <div className="kiki-card px-5 py-6 text-center">
+          <KikiCharacter state="idle" className="mb-2" />
           <div className="font-[var(--font-baloo)] text-2xl">Thank you!</div>
-          <div className="mt-1 font-[var(--font-nunito)] text-mithu-indigo/75">
+          <div className="mt-1 font-[var(--font-nunito)] text-kiki-indigo/75">
             You’re helping build the future of learning for Indian kids.
           </div>
           {summary ? (
-            <div className="mt-3 text-xs font-[var(--font-nunito)] text-mithu-indigo/55">
+            <div className="mt-3 text-xs font-[var(--font-nunito)] text-kiki-indigo/55">
               Session: {summary.turnCount} turns · {summary.durationSeconds}s
             </div>
           ) : null}
@@ -58,13 +58,13 @@ export default function FeedbackPage() {
         {!submitted ? (
           <FeedbackForm sessionId={summary?.sessionId ?? 'unknown'} onSubmitted={() => setSubmitted(true)} />
         ) : (
-          <div className="mithu-card px-5 py-6 text-center">
+          <div className="kiki-card px-5 py-6 text-center">
             <div className="font-[var(--font-baloo)] text-xl">Feedback submitted.</div>
-            <div className="mt-2 font-[var(--font-nunito)] text-mithu-indigo/75">Share Mithu with another parent.</div>
+            <div className="mt-2 font-[var(--font-nunito)] text-kiki-indigo/75">Share Kiki with another parent.</div>
             <button
               type="button"
               onClick={share}
-              className="mt-4 w-full rounded-3xl bg-mithu-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99]"
+              className="mt-4 w-full rounded-3xl bg-kiki-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99]"
             >
               Share on WhatsApp 📲
             </button>

@@ -75,7 +75,7 @@ export function useSession(language: 'en' | 'hi', limits?: SessionLimits) {
     if (savedRef.current) return;
     savedRef.current = true;
     try {
-      sessionStorage.setItem('mithu:session', JSON.stringify(summary));
+      sessionStorage.setItem('kiki:session', JSON.stringify(summary));
     } catch {
       // ignore
     }

@@ -3,7 +3,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, isFirebaseConfigured } from '@/lib/firebaseAdmin';
 
-const ADMIN_PASSWORD = 'MITHU_ADMIN_2026';
+const ADMIN_PASSWORD = 'KIKI_ADMIN_2026';
 
 export async function GET(req: NextRequest) {
   const auth = req.headers.get('authorization');

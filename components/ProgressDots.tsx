@@ -10,7 +10,7 @@ export function ProgressDots({ turnCount, max = 10 }: { turnCount: number; max?:
           key={i}
           className={cn(
             'h-2 w-2 rounded-full transition',
-            i < turnCount ? 'bg-mithu-purple' : 'bg-white/60 border border-white/60'
+            i < turnCount ? 'bg-kiki-purple' : 'bg-white/60 border border-white/60'
           )}
         />
       ))}

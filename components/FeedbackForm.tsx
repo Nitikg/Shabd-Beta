@@ -92,7 +92,7 @@ export function FeedbackForm({
 
   return (
     <div className="mx-auto w-full max-w-md space-y-4">
-      <div className="mithu-card px-5 py-4">
+      <div className="kiki-card px-5 py-4">
         <div className="font-[var(--font-baloo)] text-lg">How much did your child enjoy it?</div>
         <div className="mt-2 flex gap-2">
           {Array.from({ length: 5 }).map((_, i) => {
@@ -113,7 +113,7 @@ export function FeedbackForm({
         </div>
       </div>
 
-      <div className="mithu-card px-5 py-4">
+      <div className="kiki-card px-5 py-4">
         <div className="font-[var(--font-baloo)] text-lg">What did you observe?</div>
         <div className="mt-3 flex flex-wrap gap-2">
           {CHIP_OPTIONS.map((c) => {
@@ -124,7 +124,7 @@ export function FeedbackForm({
                 type="button"
                 onClick={() => toggleChip(c.id)}
                 className={`rounded-full px-3 py-2 text-sm font-[var(--font-nunito)] transition ${
-                  on ? 'bg-mithu-teal/20 border border-mithu-teal/40' : 'bg-white/60 border border-white/60'
+                  on ? 'bg-kiki-teal/20 border border-kiki-teal/40' : 'bg-white/60 border border-white/60'
                 }`}
               >
                 {c.label}
@@ -134,7 +134,7 @@ export function FeedbackForm({
         </div>
       </div>
 
-      <div className="mithu-card px-5 py-4">
+      <div className="kiki-card px-5 py-4">
         <div className="font-[var(--font-baloo)] text-lg">Child’s age</div>
         <div className="mt-3 grid grid-cols-5 gap-2">
           {[4, 5, 6, 7, 8].map((age) => (
@@ -143,7 +143,7 @@ export function FeedbackForm({
               type="button"
               onClick={() => setChildAge(age as 4 | 5 | 6 | 7 | 8)}
               className={`rounded-2xl py-2 text-center font-[var(--font-nunito)] ${
-                childAge === age ? 'bg-mithu-orange text-white' : 'bg-white/70 text-mithu-indigo/80'
+                childAge === age ? 'bg-kiki-orange text-white' : 'bg-white/70 text-kiki-indigo/80'
               }`}
             >
               {age}
@@ -152,23 +152,23 @@ export function FeedbackForm({
         </div>
       </div>
 
-      <div className="mithu-card px-5 py-4">
+      <div className="kiki-card px-5 py-4">
         <div className="font-[var(--font-baloo)] text-lg">Any feedback or suggestions?</div>
         <textarea
           value={openText}
           onChange={(e) => setOpenText(e.target.value)}
-          className="mt-2 w-full rounded-2xl border border-white/70 bg-white/70 p-3 font-[var(--font-nunito)] outline-none focus:ring-2 focus:ring-mithu-purple/40"
+          className="mt-2 w-full rounded-2xl border border-white/70 bg-white/70 p-3 font-[var(--font-nunito)] outline-none focus:ring-2 focus:ring-kiki-purple/40"
           rows={4}
           placeholder="Tell us what worked, what didn’t…"
         />
       </div>
 
-      <div className="mithu-card px-5 py-4">
+      <div className="kiki-card px-5 py-4">
         <div className="font-[var(--font-baloo)] text-lg">WhatsApp number (optional)</div>
         <input
           value={whatsappNumber}
           onChange={(e) => setWhatsappNumber(e.target.value)}
-          className="mt-2 w-full rounded-2xl border border-white/70 bg-white/70 p-3 font-[var(--font-nunito)] outline-none focus:ring-2 focus:ring-mithu-purple/40"
+          className="mt-2 w-full rounded-2xl border border-white/70 bg-white/70 p-3 font-[var(--font-nunito)] outline-none focus:ring-2 focus:ring-kiki-purple/40"
           placeholder="e.g. +91 98xxxxxxx"
           inputMode="tel"
         />
@@ -180,7 +180,7 @@ export function FeedbackForm({
         type="button"
         onClick={submit}
         disabled={submitting}
-        className="w-full rounded-3xl bg-mithu-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99] disabled:opacity-60"
+        className="w-full rounded-3xl bg-kiki-orange px-6 py-4 text-lg font-[var(--font-baloo)] text-white shadow-soft transition active:scale-[0.99] disabled:opacity-60"
       >
         {submitting ? 'Submitting…' : 'Submit Feedback'}
       </button>

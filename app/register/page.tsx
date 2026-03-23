@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-const ACCESS_CODE = 'MITHU2026';
-const SESSION_KEY = 'mithu:access';
+const ACCESS_CODE = 'KIKI2026';
+const SESSION_KEY = 'kiki:access';
 
 const AGE_OPTIONS = [4, 5, 6, 7, 8, 9, 10];
 const CLASS_OPTIONS = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th'];
@@ -41,7 +41,7 @@ type RegistrationResult = {
 
 function makeWhatsAppMessage(childName: string, link: string): string {
   return [
-    `Hi! Here is ${childName}'s personal link to talk to Mithu, the story parrot:`,
+    `Hi! Here is ${childName}'s personal link to talk to Kiki, the story parrot:`,
     '',
     link,
     '',
@@ -52,7 +52,7 @@ function makeWhatsAppMessage(childName: string, link: string): string {
     `4. Sit nearby but let them lead the conversation`,
     '5. After the session, there is a short feedback form for you',
     '',
-    `${childName} gets 3 story sessions with Mithu. Have fun!`,
+    `${childName} gets 3 story sessions with Kiki. Have fun!`,
   ].join('\n');
 }
 
@@ -70,12 +70,12 @@ function AccessGate({ onUnlock }: { onUnlock: () => void }) {
   };
 
   return (
-    <div className="mithu-card px-6 py-8 text-center">
-      <div className="font-[var(--font-baloo)] text-2xl text-mithu-indigo">
+    <div className="kiki-card px-6 py-8 text-center">
+      <div className="font-[var(--font-baloo)] text-2xl text-kiki-indigo">
         Parent Registration
       </div>
-      <div className="mt-2 font-[var(--font-nunito)] text-sm text-mithu-indigo/70">
-        Enter the access code to register your child for Mithu sessions.
+      <div className="mt-2 font-[var(--font-nunito)] text-sm text-kiki-indigo/70">
+        Enter the access code to register your child for Kiki sessions.
       </div>
       <input
         type="text"
@@ -86,7 +86,7 @@ function AccessGate({ onUnlock }: { onUnlock: () => void }) {
         }}
         onKeyDown={(e) => e.key === 'Enter' && submit()}
         placeholder="Access code"
-        className="mt-5 w-full rounded-2xl border border-mithu-indigo/15 bg-white px-4 py-3 text-center font-[var(--font-nunito)] text-lg tracking-widest text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+        className="mt-5 w-full rounded-2xl border border-kiki-indigo/15 bg-white px-4 py-3 text-center font-[var(--font-nunito)] text-lg tracking-widest text-kiki-indigo outline-none focus:border-kiki-orange focus:ring-2 focus:ring-kiki-orange/30"
         autoFocus
       />
       {error && (
@@ -97,7 +97,7 @@ function AccessGate({ onUnlock }: { onUnlock: () => void }) {
       <button
         type="button"
         onClick={submit}
-        className="mt-4 w-full rounded-3xl bg-mithu-orange px-6 py-3 font-[var(--font-baloo)] text-lg text-white shadow-soft transition active:scale-[0.99]"
+        className="mt-4 w-full rounded-3xl bg-kiki-orange px-6 py-3 font-[var(--font-baloo)] text-lg text-white shadow-soft transition active:scale-[0.99]"
       >
         Continue
       </button>
@@ -133,16 +133,16 @@ function SuccessScreen({
   };
 
   return (
-    <div className="mithu-card px-6 py-8 text-center">
-      <div className="font-[var(--font-baloo)] text-2xl text-mithu-indigo">
+    <div className="kiki-card px-6 py-8 text-center">
+      <div className="font-[var(--font-baloo)] text-2xl text-kiki-indigo">
         All set!
       </div>
-      <div className="mt-2 font-[var(--font-nunito)] text-sm text-mithu-indigo/70">
-        {childName} is ready to talk to Mithu. Share this link:
+      <div className="mt-2 font-[var(--font-nunito)] text-sm text-kiki-indigo/70">
+        {childName} is ready to talk to Kiki. Share this link:
       </div>
 
-      <div className="mt-4 rounded-2xl bg-mithu-offwhite/80 border border-mithu-indigo/10 px-4 py-3">
-        <div className="font-[var(--font-nunito)] text-sm text-mithu-indigo break-all">
+      <div className="mt-4 rounded-2xl bg-kiki-offwhite/80 border border-kiki-indigo/10 px-4 py-3">
+        <div className="font-[var(--font-nunito)] text-sm text-kiki-indigo break-all">
           {result.link}
         </div>
       </div>
@@ -150,7 +150,7 @@ function SuccessScreen({
       <button
         type="button"
         onClick={copyLink}
-        className="mt-4 w-full rounded-3xl bg-mithu-teal px-6 py-3 font-[var(--font-baloo)] text-lg text-white shadow-soft transition active:scale-[0.99]"
+        className="mt-4 w-full rounded-3xl bg-kiki-teal px-6 py-3 font-[var(--font-baloo)] text-lg text-white shadow-soft transition active:scale-[0.99]"
       >
         {copied ? 'Copied!' : 'Copy Link'}
       </button>
@@ -166,7 +166,7 @@ function SuccessScreen({
       <button
         type="button"
         onClick={onReset}
-        className="mt-3 w-full rounded-3xl border-2 border-mithu-orange bg-transparent px-6 py-3 font-[var(--font-baloo)] text-lg text-mithu-orange transition active:scale-[0.99]"
+        className="mt-3 w-full rounded-3xl border-2 border-kiki-orange bg-transparent px-6 py-3 font-[var(--font-baloo)] text-lg text-kiki-orange transition active:scale-[0.99]"
       >
         Register Another Child
       </button>
@@ -200,7 +200,7 @@ function CustomInterestInput({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 rounded-full border border-dashed border-mithu-indigo/30 px-4 py-2 font-[var(--font-nunito)] text-sm text-mithu-indigo/60 transition hover:border-mithu-orange hover:text-mithu-orange"
+        className="mt-2 rounded-full border border-dashed border-kiki-indigo/30 px-4 py-2 font-[var(--font-nunito)] text-sm text-kiki-indigo/60 transition hover:border-kiki-orange hover:text-kiki-orange"
       >
         + Add custom interest
       </button>
@@ -215,21 +215,21 @@ function CustomInterestInput({
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && submit()}
         placeholder="e.g. Robots, Cooking"
-        className="flex-1 rounded-2xl border border-mithu-indigo/15 bg-white px-3 py-2 font-[var(--font-nunito)] text-sm text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+        className="flex-1 rounded-2xl border border-kiki-indigo/15 bg-white px-3 py-2 font-[var(--font-nunito)] text-sm text-kiki-indigo outline-none focus:border-kiki-orange focus:ring-2 focus:ring-kiki-orange/30"
         autoFocus
       />
       <button
         type="button"
         onClick={submit}
         disabled={!value.trim()}
-        className="rounded-2xl bg-mithu-orange px-4 py-2 font-[var(--font-nunito)] text-sm font-semibold text-white shadow-soft transition active:scale-[0.99] disabled:opacity-50"
+        className="rounded-2xl bg-kiki-orange px-4 py-2 font-[var(--font-nunito)] text-sm font-semibold text-white shadow-soft transition active:scale-[0.99] disabled:opacity-50"
       >
         Add
       </button>
       <button
         type="button"
         onClick={() => { setOpen(false); setValue(''); }}
-        className="rounded-2xl border border-mithu-indigo/15 bg-white px-3 py-2 font-[var(--font-nunito)] text-sm text-mithu-indigo/60 transition"
+        className="rounded-2xl border border-kiki-indigo/15 bg-white px-3 py-2 font-[var(--font-nunito)] text-sm text-kiki-indigo/60 transition"
       >
         Cancel
       </button>
@@ -302,18 +302,18 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
   };
 
   return (
-    <div className="mithu-card px-6 py-8">
-      <div className="text-center font-[var(--font-baloo)] text-2xl text-mithu-indigo">
+    <div className="kiki-card px-6 py-8">
+      <div className="text-center font-[var(--font-baloo)] text-2xl text-kiki-indigo">
         Register Your Child
       </div>
-      <div className="mt-1 text-center font-[var(--font-nunito)] text-sm text-mithu-indigo/70">
-        Tell us about your child so Mithu can personalise the experience.
+      <div className="mt-1 text-center font-[var(--font-nunito)] text-sm text-kiki-indigo/70">
+        Tell us about your child so Kiki can personalise the experience.
       </div>
 
       <div className="mt-6 flex flex-col gap-5">
         {/* Name */}
         <div>
-          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-mithu-indigo/80 mb-1">
+          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-kiki-indigo/80 mb-1">
             Child's first name
           </label>
           <input
@@ -321,19 +321,19 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             placeholder="e.g. Arjun"
-            className="w-full rounded-2xl border border-mithu-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+            className="w-full rounded-2xl border border-kiki-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-kiki-indigo outline-none focus:border-kiki-orange focus:ring-2 focus:ring-kiki-orange/30"
           />
         </div>
 
         {/* Age */}
         <div>
-          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-mithu-indigo/80 mb-1">
+          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-kiki-indigo/80 mb-1">
             Age
           </label>
           <select
             value={form.ageYears}
             onChange={(e) => setForm((f) => ({ ...f, ageYears: Number(e.target.value) }))}
-            className="w-full rounded-2xl border border-mithu-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+            className="w-full rounded-2xl border border-kiki-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-kiki-indigo outline-none focus:border-kiki-orange focus:ring-2 focus:ring-kiki-orange/30"
           >
             {AGE_OPTIONS.map((age) => (
               <option key={age} value={age}>
@@ -345,13 +345,13 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
 
         {/* Class */}
         <div>
-          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-mithu-indigo/80 mb-1">
+          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-kiki-indigo/80 mb-1">
             Class
           </label>
           <select
             value={form.class}
             onChange={(e) => setForm((f) => ({ ...f, class: e.target.value }))}
-            className="w-full rounded-2xl border border-mithu-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+            className="w-full rounded-2xl border border-kiki-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-kiki-indigo outline-none focus:border-kiki-orange focus:ring-2 focus:ring-kiki-orange/30"
           >
             {CLASS_OPTIONS.map((cls) => (
               <option key={cls} value={cls}>
@@ -363,7 +363,7 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
 
         {/* Language */}
         <div>
-          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-mithu-indigo/80 mb-1">
+          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-kiki-indigo/80 mb-1">
             Preferred language
           </label>
           <div className="flex gap-2">
@@ -374,8 +374,8 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
                 onClick={() => setForm((f) => ({ ...f, language: opt.value }))}
                 className={`flex-1 rounded-2xl px-3 py-2.5 font-[var(--font-nunito)] text-sm font-semibold transition ${
                   form.language === opt.value
-                    ? 'bg-mithu-orange text-white shadow-soft'
-                    : 'bg-white border border-mithu-indigo/15 text-mithu-indigo/70'
+                    ? 'bg-kiki-orange text-white shadow-soft'
+                    : 'bg-white border border-kiki-indigo/15 text-kiki-indigo/70'
                 }`}
               >
                 {opt.label}
@@ -386,7 +386,7 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
 
         {/* Interests */}
         <div>
-          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-mithu-indigo/80 mb-1">
+          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-kiki-indigo/80 mb-1">
             Interests (pick 1 to 3)
           </label>
           <div className="flex flex-wrap gap-2">
@@ -399,8 +399,8 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
                   onClick={() => toggleInterest(interest)}
                   className={`rounded-full px-4 py-2 font-[var(--font-nunito)] text-sm font-medium transition ${
                     selected
-                      ? 'bg-mithu-orange text-white shadow-soft'
-                      : 'bg-white border border-mithu-indigo/15 text-mithu-indigo/70'
+                      ? 'bg-kiki-orange text-white shadow-soft'
+                      : 'bg-white border border-kiki-indigo/15 text-kiki-indigo/70'
                   }`}
                 >
                   {interest}
@@ -415,7 +415,7 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
                   key={custom}
                   type="button"
                   onClick={() => toggleInterest(custom)}
-                  className="rounded-full px-4 py-2 font-[var(--font-nunito)] text-sm font-medium bg-mithu-orange text-white shadow-soft transition"
+                  className="rounded-full px-4 py-2 font-[var(--font-nunito)] text-sm font-medium bg-kiki-orange text-white shadow-soft transition"
                 >
                   {custom}
                 </button>
@@ -431,16 +431,16 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
 
         {/* WhatsApp */}
         <div>
-          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-mithu-indigo/80 mb-1">
+          <label className="block font-[var(--font-nunito)] text-sm font-semibold text-kiki-indigo/80 mb-1">
             Parent's WhatsApp number
-            <span className="ml-1 font-normal text-mithu-indigo/50">(optional)</span>
+            <span className="ml-1 font-normal text-kiki-indigo/50">(optional)</span>
           </label>
           <input
             type="tel"
             value={form.whatsappNumber}
             onChange={(e) => setForm((f) => ({ ...f, whatsappNumber: e.target.value }))}
             placeholder="+91..."
-            className="w-full rounded-2xl border border-mithu-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-mithu-indigo outline-none focus:border-mithu-orange focus:ring-2 focus:ring-mithu-orange/30"
+            className="w-full rounded-2xl border border-kiki-indigo/15 bg-white px-4 py-3 font-[var(--font-nunito)] text-kiki-indigo outline-none focus:border-kiki-orange focus:ring-2 focus:ring-kiki-orange/30"
           />
         </div>
 
@@ -456,7 +456,7 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
           type="button"
           onClick={submit}
           disabled={!isValid || submitting}
-          className="w-full rounded-3xl bg-mithu-orange px-6 py-4 font-[var(--font-baloo)] text-lg text-white shadow-soft transition active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-3xl bg-kiki-orange px-6 py-4 font-[var(--font-baloo)] text-lg text-white shadow-soft transition active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? 'Registering...' : 'Register'}
         </button>
@@ -488,11 +488,11 @@ export default function RegisterPage() {
   }, []);
 
   return (
-    <main className="mithu-gradient-bg min-h-screen px-5 py-8">
+    <main className="kiki-gradient-bg min-h-screen px-5 py-8">
       <div className="mx-auto flex max-w-md flex-col gap-6">
         <header className="text-center">
-          <div className="font-[var(--font-baloo)] text-2xl tracking-tight text-mithu-indigo">
-            Mithu
+          <div className="font-[var(--font-baloo)] text-2xl tracking-tight text-kiki-indigo">
+            Kiki
           </div>
         </header>
 

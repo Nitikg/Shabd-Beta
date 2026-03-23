@@ -8,14 +8,14 @@ body {
 }
 
 body {
-  @apply bg-mithu-offwhite text-mithu-indigo antialiased;
+  @apply bg-kiki-offwhite text-kiki-indigo antialiased;
 }
 
 * {
   box-sizing: border-box;
 }
 
-.mithu-gradient-bg {
+.kiki-gradient-bg {
   background: radial-gradient(circle at top, #ffd166 0, #fff8f0 45%, #ffe0c2 100%);
 }
 
@@ -31,7 +31,7 @@ body {
   z-index: -1;
 }
 
-.mithu-card {
+.kiki-card {
   @apply rounded-3xl bg-white/80 shadow-soft backdrop-blur-md border border-white/60;
 }
 

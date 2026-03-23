@@ -81,35 +81,35 @@ function storyWorld(interests: string[]): string {
   const worlds: Array<{ match: (i: string) => boolean; world: string }> = [
     {
       match: (i) => /space|star|rocket|planet|moon/.test(i),
-      world: 'Mithu flies through the sky to Tara the star and Chand the moon. The setting is a magical night sky above India.',
+      world: 'Kiki flies through the sky to Tara the star and Chand the moon. The setting is a magical night sky above India.',
     },
     {
       match: (i) => /dinosaur|dino/.test(i),
-      world: 'Mithu discovers Dino Island where friendly dinosaur Raju lives. The setting is a tropical island with volcanoes and ferns.',
+      world: 'Kiki discovers Dino Island where friendly dinosaur Raju lives. The setting is a tropical island with volcanoes and ferns.',
     },
     {
       match: (i) => /car|train|truck|vehicle/.test(i),
-      world: 'Mithu rides the magical Chhuk-Chhuk train across India with Driver Chacha. The setting is a colorful railway adventure.',
+      world: 'Kiki rides the magical Chhuk-Chhuk train across India with Driver Chacha. The setting is a colorful railway adventure.',
     },
     {
       match: (i) => /food|cook|mango|sweet|chocolate|cake/.test(i),
-      world: 'Mithu visits the Grand Mela where Chef Bandar runs a magical food stall. The setting is a festive Indian bazaar.',
+      world: 'Kiki visits the Grand Mela where Chef Bandar runs a magical food stall. The setting is a festive Indian bazaar.',
     },
     {
       match: (i) => /art|color|draw|paint|craft/.test(i),
-      world: 'Mithu discovers Rainbow Village where everything is painted in magical colors by Rangoli the painter.',
+      world: 'Kiki discovers Rainbow Village where everything is painted in magical colors by Rangoli the painter.',
     },
     {
       match: (i) => /music|dance|song|sing/.test(i),
-      world: 'Mithu joins the Jungle Band where animals play magical instruments. The setting is a musical forest clearing.',
+      world: 'Kiki joins the Jungle Band where animals play magical instruments. The setting is a musical forest clearing.',
     },
     {
       match: (i) => /sport|cricket|football|run/.test(i),
-      world: 'Mithu plays in the Great Jungle Games where animals compete in fun challenges.',
+      world: 'Kiki plays in the Great Jungle Games where animals compete in fun challenges.',
     },
     {
       match: (i) => /superhero|hero|power/.test(i),
-      world: 'Mithu and the child discover they have a magical power and must help the village animals.',
+      world: 'Kiki and the child discover they have a magical power and must help the village animals.',
     },
   ];
 
@@ -118,7 +118,7 @@ function storyWorld(interests: string[]): string {
   }
 
   // Default: classic Indian jungle
-  return 'Mithu takes the child on a jungle adventure with Haathi the elephant and Bandar the monkey near a big mango tree.';
+  return 'Kiki takes the child on a jungle adventure with Haathi the elephant and Bandar the monkey near a big mango tree.';
 }
 
 /* ------------------------------------------------------------------ */
@@ -135,11 +135,11 @@ function sessionArc(
     return `
 SESSION ARC (Session 1 - Warm Up, ${config.maxTurns} turns):
 
-Turn 1: Greet ${kidName} warmly as Mithu the parrot. Ask their favourite thing from their interests.
+Turn 1: Greet ${kidName} warmly as Kiki. Ask their favourite thing from their interests.
 Turn 2: Get excited about their answer. Start a tiny story using what they said.
 Turn 3-${config.maxTurns - 2}: Tell a quick, fun mini-story. Each turn: one small event, then one choice.
 Turn ${config.maxTurns - 1}: Bring the mini-story to a happy ending. Use ${kidName}'s name and choices.
-Turn ${config.maxTurns}: Warm goodbye. Say "Next time Mithu has an even bigger adventure for you! Tell your Mamma Papa what happened!"
+Turn ${config.maxTurns}: Warm goodbye. Say "Next time Kiki has an even bigger adventure for you! Tell your Mamma Papa what happened!"
 
 IMPORTANT: This is the FIRST meeting. Make ${kidName} feel special and excited to come back.
 Keep it SHORT and SWEET. Better to end on a high note than drag on.`.trim();
@@ -149,7 +149,7 @@ Keep it SHORT and SWEET. Better to end on a high note than drag on.`.trim();
     return `
 SESSION ARC (Session 2 - Core Story, ${config.maxTurns} turns):
 
-Turn 1: Welcome ${kidName} back with excitement. Say "Mithu was waiting for you!" Reference something from last time.
+Turn 1: Welcome ${kidName} back with excitement. Say "Kiki was waiting for you!" Reference something from last time.
 ${prevSummary ? `CALLBACK: Last session, ${prevSummary}. Weave this into your greeting or early story.` : ''}
 Turn 2: Set up a bigger story world. Give first major choice.
 Turn 3-${config.maxTurns - 3}: Build the adventure with rising excitement. Each turn: react to choice, advance story, give next choice.
@@ -157,7 +157,7 @@ Turn ${config.maxTurns - 2}: Create a suspenseful moment. Something surprising h
 Turn ${config.maxTurns - 1}: End on a mini cliffhanger. Say "Oh no! What will happen next? We will find out next time!"
 Turn ${config.maxTurns}: Quick warm goodbye. "You are so brave ${kidName}! Tell Mamma Papa about today!"
 
-IMPORTANT: Make callbacks to Session 1. The child should feel Mithu REMEMBERS them.
+IMPORTANT: Make callbacks to Session 1. The child should feel Kiki REMEMBERS them.
 End with a cliffhanger so child WANTS to come back for Session 3.`.trim();
   }
 
@@ -170,8 +170,8 @@ ${prevSummary ? `CALLBACK: Last session, ${prevSummary}. Resolve the cliffhanger
 Turn 2-3: Set up the grand challenge. Something big needs to be solved or saved.
 Turn 4-${config.maxTurns - 3}: ${kidName} is the HERO. Their choices save the day. Make them feel brave and clever.
 Turn ${config.maxTurns - 2}: Grand celebration! All the characters cheer for ${kidName}. Use their name proudly.
-Turn ${config.maxTurns - 1}: Emotional farewell from Mithu. "You are one of the bravest friends Mithu has ever had!"
-Turn ${config.maxTurns}: Tell them to share with Mamma Papa. Say "Mithu will always remember you ${kidName}!"
+Turn ${config.maxTurns - 1}: Emotional farewell from Kiki. "You are one of the bravest friends Kiki has ever had!"
+Turn ${config.maxTurns}: Tell them to share with Mamma Papa. Say "Kiki will always remember you ${kidName}!"
 
 IMPORTANT: This is the FINAL session. Make it the most magical and personal.
 Reference choices from ALL previous sessions. Make ${kidName} feel like the hero of their own story.
@@ -195,7 +195,7 @@ export function buildSystemPrompt(
   const config = getSessionConfig(kid.ageYears, sessionNumber);
 
   return `
-You are Mithu, a magical story parrot for a ${kid.ageYears}-year-old child in India.
+You are Kiki, a magical cartoon story friend for a ${kid.ageYears}-year-old child in India.
 
 YOUR JOB:
 Tell a fast, fun, simple story where the child (${kid.name}) is the hero.
@@ -332,7 +332,7 @@ export function generateSessionMemory(
       const answer = messages[i + 1].content.trim();
       if (answer) {
         // Extract just the choice/answer, keep it short
-        pairs.push(`Mithu asked about "${question.slice(-40)}" and ${kidName} said "${answer}"`);
+        pairs.push(`Kiki asked about "${question.slice(-40)}" and ${kidName} said "${answer}"`);
       }
     }
   }

@@ -123,7 +123,7 @@ function PasswordGate({ onAuth }: { onAuth: (pw: string) => void }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (pw === 'MITHU_ADMIN_2026') {
+    if (pw === 'KIKI_ADMIN_2026') {
       onAuth(pw);
     } else {
       setError(true);
@@ -131,9 +131,9 @@ function PasswordGate({ onAuth }: { onAuth: (pw: string) => void }) {
   }
 
   return (
-    <div className="min-h-screen mithu-gradient-bg flex items-center justify-center p-4">
-      <div className="mithu-card p-8 max-w-sm w-full">
-        <h1 className="text-2xl font-bold text-mithu-indigo mb-6 text-center" style={{ fontFamily: 'var(--font-baloo)' }}>
+    <div className="min-h-screen kiki-gradient-bg flex items-center justify-center p-4">
+      <div className="kiki-card p-8 max-w-sm w-full">
+        <h1 className="text-2xl font-bold text-kiki-indigo mb-6 text-center" style={{ fontFamily: 'var(--font-baloo)' }}>
           Shabd Admin
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -142,14 +142,14 @@ function PasswordGate({ onAuth }: { onAuth: (pw: string) => void }) {
             value={pw}
             onChange={(e) => { setPw(e.target.value); setError(false); }}
             placeholder="Enter admin password"
-            className="w-full px-4 py-3 border-2 border-mithu-indigo/20 rounded-xl focus:outline-none focus:border-mithu-orange transition-colors"
+            className="w-full px-4 py-3 border-2 border-kiki-indigo/20 rounded-xl focus:outline-none focus:border-kiki-orange transition-colors"
             style={{ fontFamily: 'var(--font-nunito)' }}
             autoFocus
           />
           {error && <p className="text-red-500 text-sm">Incorrect password</p>}
           <button
             type="submit"
-            className="w-full py-3 bg-mithu-orange text-white font-bold rounded-xl hover:opacity-90 transition-opacity"
+            className="w-full py-3 bg-kiki-orange text-white font-bold rounded-xl hover:opacity-90 transition-opacity"
             style={{ fontFamily: 'var(--font-nunito)' }}
           >
             Login
@@ -162,13 +162,13 @@ function PasswordGate({ onAuth }: { onAuth: (pw: string) => void }) {
 
 function StarDisplay({ rating }: { rating: number | null }) {
   if (rating == null) return <span className="text-gray-400">--</span>;
-  return <span className="text-mithu-orange font-bold">{rating}/5</span>;
+  return <span className="text-kiki-orange font-bold">{rating}/5</span>;
 }
 
 function SessionDetail({ session }: { session: Session }) {
   return (
-    <div className="bg-mithu-offwhite/50 rounded-xl p-4 mb-3 border border-mithu-indigo/10">
-      <div className="flex flex-wrap gap-4 mb-3 text-sm text-mithu-indigo/70">
+    <div className="bg-kiki-offwhite/50 rounded-xl p-4 mb-3 border border-kiki-indigo/10">
+      <div className="flex flex-wrap gap-4 mb-3 text-sm text-kiki-indigo/70">
         <span>Session {session.sessionNumber}</span>
         <span>{formatDuration(session.durationSeconds)}</span>
         <span>{session.turnCount} turns</span>
@@ -184,11 +184,11 @@ function SessionDetail({ session }: { session: Session }) {
           .map((turn, i) => (
             <div key={i} className={`text-sm rounded-lg px-3 py-2 ${
               turn.role === 'assistant'
-                ? 'bg-mithu-orange/10 text-mithu-indigo'
-                : 'bg-mithu-teal/10 text-mithu-indigo'
+                ? 'bg-kiki-orange/10 text-kiki-indigo'
+                : 'bg-kiki-teal/10 text-kiki-indigo'
             }`}>
               <span className="font-bold text-xs uppercase tracking-wide mr-2">
-                {turn.role === 'assistant' ? 'Mithu' : 'Child'}
+                {turn.role === 'assistant' ? 'Kiki' : 'Child'}
               </span>
               {turn.text}
             </div>
@@ -197,19 +197,19 @@ function SessionDetail({ session }: { session: Session }) {
 
       {/* Feedback */}
       {(session.chips.length > 0 || session.openText) && (
-        <div className="border-t border-mithu-indigo/10 pt-3">
-          <p className="text-xs font-bold text-mithu-indigo/50 uppercase tracking-wide mb-2">Feedback</p>
+        <div className="border-t border-kiki-indigo/10 pt-3">
+          <p className="text-xs font-bold text-kiki-indigo/50 uppercase tracking-wide mb-2">Feedback</p>
           {session.chips.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {session.chips.map((chip, i) => (
-                <span key={i} className="px-2.5 py-1 bg-mithu-purple/15 text-mithu-purple text-xs rounded-full font-medium">
+                <span key={i} className="px-2.5 py-1 bg-kiki-purple/15 text-kiki-purple text-xs rounded-full font-medium">
                   {chip}
                 </span>
               ))}
             </div>
           )}
           {session.openText && (
-            <p className="text-sm text-mithu-indigo/70 italic">"{session.openText}"</p>
+            <p className="text-sm text-kiki-indigo/70 italic">"{session.openText}"</p>
           )}
         </div>
       )}
@@ -244,14 +244,14 @@ function KidRow({ kid, sessions }: { kid: Kid; sessions: Session[] }) {
     <>
       <tr
         onClick={() => setExpanded(!expanded)}
-        className="hover:bg-mithu-orange/5 cursor-pointer transition-colors border-b border-mithu-indigo/10"
+        className="hover:bg-kiki-orange/5 cursor-pointer transition-colors border-b border-kiki-indigo/10"
       >
-        <td className="px-4 py-3 font-medium text-mithu-indigo">{kid.name}</td>
+        <td className="px-4 py-3 font-medium text-kiki-indigo">{kid.name}</td>
         <td className="px-4 py-3 text-center">{kid.ageYears}</td>
         <td className={`px-4 py-3 text-center ${sessionColor}`}>{kid.sessionCount}/3</td>
         <td className="px-4 py-3 text-center">{avgStr}</td>
-        <td className="px-4 py-3 text-center text-sm text-mithu-indigo/60">{formatDate(lastSession?.startedAt ?? null)}</td>
-        <td className="px-4 py-3 text-center text-mithu-indigo/40 text-lg">{expanded ? '-' : '+'}</td>
+        <td className="px-4 py-3 text-center text-sm text-kiki-indigo/60">{formatDate(lastSession?.startedAt ?? null)}</td>
+        <td className="px-4 py-3 text-center text-kiki-indigo/40 text-lg">{expanded ? '-' : '+'}</td>
       </tr>
       {expanded && (
         <tr>
@@ -279,7 +279,7 @@ export default function AdminPage() {
   // Restore from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem('shabd-admin-pw');
-    if (stored === 'MITHU_ADMIN_2026') {
+    if (stored === 'KIKI_ADMIN_2026') {
       setPassword(stored);
     }
   }, []);
@@ -323,20 +323,20 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen mithu-gradient-bg flex items-center justify-center">
-        <p className="text-mithu-indigo text-lg" style={{ fontFamily: 'var(--font-nunito)' }}>Loading...</p>
+      <div className="min-h-screen kiki-gradient-bg flex items-center justify-center">
+        <p className="text-kiki-indigo text-lg" style={{ fontFamily: 'var(--font-nunito)' }}>Loading...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen mithu-gradient-bg flex items-center justify-center">
-        <div className="mithu-card p-8 text-center">
+      <div className="min-h-screen kiki-gradient-bg flex items-center justify-center">
+        <div className="kiki-card p-8 text-center">
           <p className="text-red-500 mb-4">{error}</p>
           <button
             onClick={() => password && fetchData(password)}
-            className="px-6 py-2 bg-mithu-orange text-white rounded-xl font-bold hover:opacity-90"
+            className="px-6 py-2 bg-kiki-orange text-white rounded-xl font-bold hover:opacity-90"
           >
             Retry
           </button>
@@ -374,23 +374,23 @@ export default function AdminPage() {
   const sortedKids = [...kids].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="min-h-screen mithu-gradient-bg" style={{ fontFamily: 'var(--font-nunito)' }}>
+    <div className="min-h-screen kiki-gradient-bg" style={{ fontFamily: 'var(--font-nunito)' }}>
       <div className="max-w-6xl mx-auto p-4 md:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-mithu-indigo" style={{ fontFamily: 'var(--font-baloo)' }}>
+          <h1 className="text-3xl font-bold text-kiki-indigo" style={{ fontFamily: 'var(--font-baloo)' }}>
             Shabd Admin
           </h1>
           <div className="flex gap-3">
             <button
               onClick={() => password && fetchData(password)}
-              className="px-4 py-2 bg-mithu-teal/20 text-mithu-teal font-bold rounded-xl hover:bg-mithu-teal/30 transition-colors text-sm"
+              className="px-4 py-2 bg-kiki-teal/20 text-kiki-teal font-bold rounded-xl hover:bg-kiki-teal/30 transition-colors text-sm"
             >
               Refresh
             </button>
             <button
               onClick={() => downloadCsv(buildCsv(kids, sessions))}
-              className="px-4 py-2 bg-mithu-orange text-white font-bold rounded-xl hover:opacity-90 transition-opacity text-sm"
+              className="px-4 py-2 bg-kiki-orange text-white font-bold rounded-xl hover:opacity-90 transition-opacity text-sm"
             >
               Export CSV
             </button>
@@ -399,27 +399,27 @@ export default function AdminPage() {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="mithu-card p-4 text-center">
-            <p className="text-2xl font-bold text-mithu-indigo">{totalKids}</p>
-            <p className="text-xs text-mithu-indigo/60 uppercase tracking-wide mt-1">Kids</p>
+          <div className="kiki-card p-4 text-center">
+            <p className="text-2xl font-bold text-kiki-indigo">{totalKids}</p>
+            <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Kids</p>
           </div>
-          <div className="mithu-card p-4 text-center">
-            <p className="text-2xl font-bold text-mithu-indigo">{totalSessions}</p>
-            <p className="text-xs text-mithu-indigo/60 uppercase tracking-wide mt-1">Sessions</p>
+          <div className="kiki-card p-4 text-center">
+            <p className="text-2xl font-bold text-kiki-indigo">{totalSessions}</p>
+            <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Sessions</p>
           </div>
-          <div className="mithu-card p-4 text-center">
-            <p className="text-2xl font-bold text-mithu-orange">{avgRating}</p>
-            <p className="text-xs text-mithu-indigo/60 uppercase tracking-wide mt-1">Avg Rating / 5</p>
+          <div className="kiki-card p-4 text-center">
+            <p className="text-2xl font-bold text-kiki-orange">{avgRating}</p>
+            <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Avg Rating / 5</p>
           </div>
-          <div className="mithu-card p-4 text-center">
-            <p className="text-2xl font-bold text-mithu-teal">{completionRate}%</p>
-            <p className="text-xs text-mithu-indigo/60 uppercase tracking-wide mt-1">Completion</p>
+          <div className="kiki-card p-4 text-center">
+            <p className="text-2xl font-bold text-kiki-teal">{completionRate}%</p>
+            <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Completion</p>
           </div>
-          <div className="mithu-card p-4 text-center col-span-2 md:col-span-1">
+          <div className="kiki-card p-4 text-center col-span-2 md:col-span-1">
             {topChips.length > 0 ? (
               <div className="flex flex-wrap gap-1 justify-center">
                 {topChips.map(([chip, count]) => (
-                  <span key={chip} className="px-2 py-0.5 bg-mithu-purple/15 text-mithu-purple text-xs rounded-full">
+                  <span key={chip} className="px-2 py-0.5 bg-kiki-purple/15 text-kiki-purple text-xs rounded-full">
                     {chip} ({count})
                   </span>
                 ))}
@@ -427,21 +427,21 @@ export default function AdminPage() {
             ) : (
               <p className="text-gray-400 text-sm">--</p>
             )}
-            <p className="text-xs text-mithu-indigo/60 uppercase tracking-wide mt-1">Top Chips</p>
+            <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Top Chips</p>
           </div>
         </div>
 
         {/* Kids Table */}
-        <div className="mithu-card overflow-hidden">
+        <div className="kiki-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-mithu-indigo/5 border-b border-mithu-indigo/10">
-                  <th className="px-4 py-3 text-left text-xs font-bold text-mithu-indigo/60 uppercase tracking-wide">Name</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-mithu-indigo/60 uppercase tracking-wide">Age</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-mithu-indigo/60 uppercase tracking-wide">Sessions</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-mithu-indigo/60 uppercase tracking-wide">Avg Stars</th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-mithu-indigo/60 uppercase tracking-wide">Last Session</th>
+                <tr className="bg-kiki-indigo/5 border-b border-kiki-indigo/10">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Name</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Age</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Sessions</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Avg Stars</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Last Session</th>
                   <th className="px-4 py-3 text-center w-12"></th>
                 </tr>
               </thead>

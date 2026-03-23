@@ -5,7 +5,7 @@ export function SessionTimer({ remainingSeconds }: { remainingSeconds: number })
   const s = remainingSeconds % 60;
   const label = `${m}:${String(s).padStart(2, '0')}`;
   return (
-    <div className="rounded-full bg-white/70 px-3 py-1 text-sm font-[var(--font-nunito)] text-mithu-indigo/80 shadow-soft">
+    <div className="rounded-full bg-white/70 px-3 py-1 text-sm font-[var(--font-nunito)] text-kiki-indigo/80 shadow-soft">
       {label}
     </div>
   );

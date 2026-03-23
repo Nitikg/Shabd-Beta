@@ -1,6 +1,6 @@
 export const runtime = 'nodejs';
 
-import { MITHU_SYSTEM_PROMPT } from '@/constants/prompts';
+import { KIKI_SYSTEM_PROMPT } from '@/constants/prompts';
 import { getKidProfile, getSessionSummary } from '@/lib/kidProfile';
 import { buildSystemPrompt } from '@/lib/promptBuilder';
 import { isFirebaseConfigured } from '@/lib/firebaseAdmin';
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { messages, kidId, sessionNumber } = await req.json();
 
     // Build system prompt — use kid-aware version if profile is available
-    let systemPrompt = MITHU_SYSTEM_PROMPT;
+    let systemPrompt = KIKI_SYSTEM_PROMPT;
 
     if (kidId && isFirebaseConfigured()) {
       const [kid, prevSummary] = await Promise.all([
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY ?? ''}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL ?? '',
-        'X-Title': 'Mithu App Beta'
+        'X-Title': 'Kiki App Beta'
       },
       body: JSON.stringify({
         model: 'anthropic/claude-3-haiku',

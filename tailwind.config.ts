@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        mithu: {
+        kiki: {
           orange: '#FF6B35',
           yellow: '#FFD166',
           teal: '#06D6A0',
