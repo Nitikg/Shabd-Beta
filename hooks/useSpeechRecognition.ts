@@ -42,17 +42,28 @@ function createDeepgramRecorder(
   let stream: MediaStream | null = null;
   let chunks: Blob[] = [];
   let silenceTimer: number | null = null;
+  let maxTimer: number | null = null;
   let analyser: AnalyserNode | null = null;
   let animFrameId: number | null = null;
   let audioContext: AudioContext | null = null;
   let stopped = false;
+  let analyserWorking = false;
 
   const SILENCE_THRESHOLD = 15; // RMS level below which we consider silence
   const SILENCE_DURATION = 2000; // ms of silence before auto-stop
+  const MAX_RECORDING_DURATION = 10000; // hard cap — 10 seconds
 
-  function clearSilenceTimer() {
+  function clearTimers() {
     if (silenceTimer) window.clearTimeout(silenceTimer);
     silenceTimer = null;
+    if (maxTimer) window.clearTimeout(maxTimer);
+    maxTimer = null;
+  }
+
+  function stopRecording() {
+    if (mediaRecorder?.state === 'recording') {
+      mediaRecorder.stop();
+    }
   }
 
   async function start() {
@@ -67,12 +78,33 @@ function createDeepgramRecorder(
       return;
     }
 
-    // Set up audio analysis for silence detection
-    audioContext = new AudioContext();
-    const source = audioContext.createMediaStreamSource(stream);
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 512;
-    source.connect(analyser);
+    // Try to set up AudioContext for silence detection.
+    // On iOS, AudioContext created outside a user gesture is suspended
+    // and cannot be resumed — in that case we skip analyser-based silence
+    // detection and rely on a max recording timer instead.
+    try {
+      audioContext = new AudioContext();
+
+      // Attempt to resume — required on iOS but will fail without user gesture
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume().catch(() => {});
+      }
+
+      if (audioContext.state === 'running') {
+        const source = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        analyserWorking = true;
+      } else {
+        // AudioContext couldn't resume (iOS without user gesture) — close it
+        audioContext.close().catch(() => {});
+        audioContext = null;
+      }
+    } catch {
+      // AudioContext not available — proceed without it
+      audioContext = null;
+    }
 
     // Pick a supported mime type — order matters for cross-platform
     // iOS Safari: supports audio/mp4, NOT audio/webm
@@ -90,17 +122,33 @@ function createDeepgramRecorder(
       m === '' || MediaRecorder.isTypeSupported(m)
     ) || '';
 
-    mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    try {
+      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    } catch {
+      onError('Something went wrong with the microphone.');
+      stream.getTracks().forEach((t) => t.stop());
+      onEnd();
+      return;
+    }
 
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunks.push(e.data);
     };
 
     mediaRecorder.onstop = async () => {
-      cancelAnimationFrame(animFrameId!);
-      clearSilenceTimer();
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      clearTimers();
 
-      if (chunks.length === 0 || stopped) {
+      // Release mic immediately
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+      }
+      if (audioContext) {
+        audioContext.close().catch(() => {});
+        audioContext = null;
+      }
+
+      if (chunks.length === 0) {
         onEnd();
         return;
       }
@@ -140,53 +188,58 @@ function createDeepgramRecorder(
 
     mediaRecorder.start(250); // collect in 250ms chunks
 
-    // Silence detection via audio level monitoring
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    // Always set a hard max recording timer (safety net on all platforms,
+    // primary stop mechanism on iOS where analyser doesn't work)
+    maxTimer = window.setTimeout(() => {
+      stopRecording();
+    }, MAX_RECORDING_DURATION);
 
-    function checkAudioLevel() {
-      if (stopped || !analyser) return;
-      analyser.getByteTimeDomainData(dataArray);
+    // Silence detection via audio level monitoring — only when AudioContext is running
+    if (analyserWorking && analyser) {
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-      // Calculate RMS
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        const val = (dataArray[i] - 128) / 128;
-        sum += val * val;
-      }
-      const rms = Math.sqrt(sum / dataArray.length) * 100;
+      function checkAudioLevel() {
+        if (stopped || !analyser) return;
+        analyser.getByteTimeDomainData(dataArray);
 
-      if (rms > SILENCE_THRESHOLD) {
-        // Sound detected — reset silence timer
-        clearSilenceTimer();
-        onInterim('Listening...');
-      } else if (!silenceTimer) {
-        // Start silence countdown
-        silenceTimer = window.setTimeout(() => {
-          if (mediaRecorder?.state === 'recording') {
-            mediaRecorder.stop();
+        // Calculate RMS
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const val = (dataArray[i] - 128) / 128;
+          sum += val * val;
+        }
+        const rms = Math.sqrt(sum / dataArray.length) * 100;
+
+        if (rms > SILENCE_THRESHOLD) {
+          // Sound detected — reset silence timer
+          if (silenceTimer) {
+            window.clearTimeout(silenceTimer);
+            silenceTimer = null;
           }
-        }, SILENCE_DURATION);
+          onInterim('Listening...');
+        } else if (!silenceTimer) {
+          // Start silence countdown
+          silenceTimer = window.setTimeout(() => {
+            stopRecording();
+          }, SILENCE_DURATION);
+        }
+
+        animFrameId = requestAnimationFrame(checkAudioLevel);
       }
 
-      animFrameId = requestAnimationFrame(checkAudioLevel);
+      checkAudioLevel();
+    } else {
+      // No analyser (iOS) — just show listening state
+      onInterim('Listening...');
     }
-
-    checkAudioLevel();
   }
 
   function stop() {
     stopped = true;
-    clearSilenceTimer();
+    clearTimers();
     if (animFrameId) cancelAnimationFrame(animFrameId);
-    if (mediaRecorder?.state === 'recording') {
-      mediaRecorder.stop();
-    }
-    if (stream) {
-      stream.getTracks().forEach((t) => t.stop());
-    }
-    if (audioContext) {
-      audioContext.close().catch(() => {});
-    }
+    // stopRecording triggers onstop which will send audio to Deepgram
+    stopRecording();
   }
 
   return { start, stop };
