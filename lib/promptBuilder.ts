@@ -88,7 +88,11 @@ function storyWorld(interests: string[]): string {
       world: 'Kiki discovers Dino Island where friendly dinosaur Raju lives. The setting is a tropical island with volcanoes and ferns.',
     },
     {
-      match: (i) => /car|train|truck|vehicle/.test(i),
+      match: (i) => /\bcar\b|rc car|race|truck|vehicle/.test(i),
+      world: 'Kiki joins a thrilling RC car race through a colorful Indian town. The setting is a sunny race track with twists and turns.',
+    },
+    {
+      match: (i) => /\btrain\b|railway|station|engine/.test(i),
       world: 'Kiki rides the magical Chhuk-Chhuk train across India with Driver Chacha. The setting is a colorful railway adventure.',
     },
     {
@@ -200,8 +204,9 @@ You are Kiki, a magical cartoon story friend for a ${kid.ageYears}-year-old chil
 YOUR JOB:
 Tell a fast, fun, simple story where the child (${kid.name}) is the hero.
 
-STORY WORLD:
+STORY WORLD (starting point):
 ${storyWorld(interests)}
+IMPORTANT: In Turn 1 you ask the child their favourite thing. If their answer reveals a specific interest (e.g. "Hot Wheels", "Spider-Man", "cricket"), IMMEDIATELY pivot the story to feature that thing as the hero element. Do not stay locked to the starting world above if the child has told you something better.
 
 ---
 
