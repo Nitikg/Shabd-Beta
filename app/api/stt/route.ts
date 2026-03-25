@@ -18,12 +18,12 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await audioFile.arrayBuffer());
 
     const res = await fetch(
-      `https://api.deepgram.com/v1/listen?model=nova-3&language=${language === 'hi' ? 'hi' : 'en-IN'}&detect_language=true&smart_format=true&punctuate=true`,
+      `https://api.deepgram.com/v1/listen?model=nova-3&language=${language === 'hi' ? 'hi-Latn' : 'en-IN'}&smart_format=true&punctuate=true`,
       {
         method: 'POST',
         headers: {
           Authorization: `Token ${apiKey}`,
-          'Content-Type': audioFile.type || 'audio/webm',
+          'Content-Type': audioFile.type || 'audio/mp4',
         },
         body: buffer,
       }

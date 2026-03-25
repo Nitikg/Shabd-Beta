@@ -100,6 +100,13 @@ function buildCsv(kids: Kid[], sessions: Session[]): string {
     }
   }
 
+  // Anonymous sessions
+  const kidIds = new Set(kids.map((k) => k.id));
+  const anonSessions = sessions.filter((s) => !s.kidId || !kidIds.has(s.kidId));
+  for (const s of anonSessions) {
+    rows.push(['anonymous', '', '', '', s.language, '', String(s.durationSeconds), String(s.turnCount), '', '', '']);
+  }
+
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const lines = [headers.join(','), ...rows.map((r) => r.map(escape).join(','))];
   return lines.join('\n');
@@ -268,6 +275,32 @@ function KidRow({ kid, sessions }: { kid: Kid; sessions: Session[] }) {
   );
 }
 
+function AnonRow({ session }: { session: Session }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      <tr
+        onClick={() => setExpanded(!expanded)}
+        className="hover:bg-kiki-orange/5 cursor-pointer transition-colors border-b border-kiki-indigo/10"
+      >
+        <td className="px-4 py-3 font-mono text-xs text-kiki-indigo/50">{session.id.slice(0, 8)}</td>
+        <td className="px-4 py-3 text-center uppercase text-xs">{session.language || '--'}</td>
+        <td className="px-4 py-3 text-center">{session.turnCount}</td>
+        <td className="px-4 py-3 text-center">{formatDuration(session.durationSeconds)}</td>
+        <td className="px-4 py-3 text-center text-sm text-kiki-indigo/60">{formatDateTime(session.startedAt)}</td>
+        <td className="px-4 py-3 text-center text-kiki-indigo/40 text-lg">{expanded ? '-' : '+'}</td>
+      </tr>
+      {expanded && (
+        <tr>
+          <td colSpan={6} className="px-4 py-4 bg-white/50">
+            <SessionDetail session={session} />
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
 // --- Main Dashboard ---
 
 export default function AdminPage() {
@@ -349,6 +382,12 @@ export default function AdminPage() {
 
   const { kids, sessions } = data;
 
+  // --- Split registered vs anonymous ---
+  const kidIds = new Set(kids.map((k) => k.id));
+  const anonSessions = sessions
+    .filter((s) => !s.kidId || !kidIds.has(s.kidId))
+    .sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0));
+
   // --- Overview Stats ---
   const totalKids = kids.length;
   const totalSessions = sessions.length;
@@ -398,7 +437,7 @@ export default function AdminPage() {
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <div className="kiki-card p-4 text-center">
             <p className="text-2xl font-bold text-kiki-indigo">{totalKids}</p>
             <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Kids</p>
@@ -408,6 +447,10 @@ export default function AdminPage() {
             <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Sessions</p>
           </div>
           <div className="kiki-card p-4 text-center">
+            <p className="text-2xl font-bold text-kiki-purple">{anonSessions.length}</p>
+            <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Anon Plays</p>
+          </div>
+          <div className="kiki-card p-4 text-center">
             <p className="text-2xl font-bold text-kiki-orange">{avgRating}</p>
             <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Avg Rating / 5</p>
           </div>
@@ -415,7 +458,7 @@ export default function AdminPage() {
             <p className="text-2xl font-bold text-kiki-teal">{completionRate}%</p>
             <p className="text-xs text-kiki-indigo/60 uppercase tracking-wide mt-1">Completion</p>
           </div>
-          <div className="kiki-card p-4 text-center col-span-2 md:col-span-1">
+          <div className="kiki-card p-4 text-center col-span-2 md:col-span-2">
             {topChips.length > 0 ? (
               <div className="flex flex-wrap gap-1 justify-center">
                 {topChips.map(([chip, count]) => (
@@ -432,7 +475,10 @@ export default function AdminPage() {
         </div>
 
         {/* Kids Table */}
-        <div className="kiki-card overflow-hidden">
+        <div className="kiki-card overflow-hidden mb-8">
+          <div className="px-4 py-3 border-b border-kiki-indigo/10">
+            <h2 className="text-sm font-bold text-kiki-indigo/60 uppercase tracking-wide">Registered Kids</h2>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -452,6 +498,37 @@ export default function AdminPage() {
                   </tr>
                 ) : (
                   sortedKids.map((kid) => <KidRow key={kid.id} kid={kid} sessions={sessions} />)
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Anonymous Sessions Table */}
+        <div className="kiki-card overflow-hidden">
+          <div className="px-4 py-3 border-b border-kiki-indigo/10 flex items-center gap-3">
+            <h2 className="text-sm font-bold text-kiki-indigo/60 uppercase tracking-wide">Anonymous Plays</h2>
+            <span className="px-2 py-0.5 bg-kiki-purple/15 text-kiki-purple text-xs rounded-full font-medium">{anonSessions.length}</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-kiki-indigo/5 border-b border-kiki-indigo/10">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Session ID</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Lang</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Turns</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Duration</th>
+                  <th className="px-4 py-3 text-center text-xs font-bold text-kiki-indigo/60 uppercase tracking-wide">Time</th>
+                  <th className="px-4 py-3 text-center w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {anonSessions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">No anonymous sessions yet</td>
+                  </tr>
+                ) : (
+                  anonSessions.map((s) => <AnonRow key={s.id} session={s} />)
                 )}
               </tbody>
             </table>
