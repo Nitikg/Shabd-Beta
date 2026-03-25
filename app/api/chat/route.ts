@@ -5,9 +5,21 @@ import { getKidProfile, getSessionSummary } from '@/lib/kidProfile';
 import { buildSystemPrompt } from '@/lib/promptBuilder';
 import { isFirebaseConfigured } from '@/lib/firebaseAdmin';
 
+const VALID_ROLES = new Set(['user', 'assistant']);
+
 export async function POST(req: Request) {
   try {
     const { messages, kidId, sessionNumber } = await req.json();
+
+    // Validate messages to prevent prompt injection
+    if (!Array.isArray(messages) || messages.length > 25) {
+      return Response.json({ text: '' }, { status: 400 });
+    }
+    for (const m of messages) {
+      if (!VALID_ROLES.has(m?.role) || typeof m?.content !== 'string' || m.content.length > 2000) {
+        return Response.json({ text: '' }, { status: 400 });
+      }
+    }
 
     // Build system prompt — use kid-aware version if profile is available
     let systemPrompt = KIKI_SYSTEM_PROMPT;

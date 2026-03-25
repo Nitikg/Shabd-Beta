@@ -3,11 +3,13 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, isFirebaseConfigured } from '@/lib/firebaseAdmin';
 
-const ADMIN_PASSWORD = 'KIKI_ADMIN_2026';
-
 export async function GET(req: NextRequest) {
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    return NextResponse.json({ error: 'Admin not configured' }, { status: 503 });
+  }
   const auth = req.headers.get('authorization');
-  if (!auth || auth !== `Bearer ${ADMIN_PASSWORD}`) {
+  if (!auth || auth !== `Bearer ${adminPassword}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

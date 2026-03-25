@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { KikiCharacter, type KikiState } from '@/components/KikiCharacter';
 import { SpeechBubble } from '@/components/SpeechBubble';
@@ -34,6 +34,12 @@ function pick<T>(arr: T[]) {
 
 function getLang(): 'en' | 'hi' {
   if (typeof window === 'undefined') return 'en';
+  // Migrate stale key from old Mithu branding
+  const legacy = localStorage.getItem('mithu:lang');
+  if (legacy) {
+    localStorage.setItem('kiki:lang', legacy);
+    localStorage.removeItem('mithu:lang');
+  }
   const v = localStorage.getItem('kiki:lang');
   return v === 'hi' ? 'hi' : 'en';
 }
@@ -60,8 +66,8 @@ export default function PlayPage() {
   const [sessionNumber, setSessionNumber] = useState(1);
   const [kidLoading, setKidLoading] = useState(true);
 
-  const greetedRef = useRef(false);
   const sessionSavedRef = useRef(false);
+  const sessionEndedRef = useRef(false);
   const autoListen = true;
 
   // Read ?kid= from URL on mount and load kid profile
@@ -121,7 +127,7 @@ export default function PlayPage() {
     return 'idle';
   }, [status]);
 
-  const safeSpeak = async (text: string) => {
+  const safeSpeak = useCallback(async (text: string) => {
     setStatus('speaking');
     setKikiText(text);
     session.addMessage({ role: 'assistant', content: text });
@@ -131,10 +137,12 @@ export default function PlayPage() {
         'Kiki is having trouble playing sound in this browser. For best experience, try Android Chrome or desktop Chrome.'
       );
     }
-    if (session.isEnded) return;
+    // Use ref instead of session.isEnded to avoid stale closure after async await
+    if (sessionEndedRef.current) return;
     setStatus(autoListen ? 'listening' : 'ready');
     if (autoListen) speech.startListening();
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, voice, session.addMessage, speech.startListening]);
 
   const callChat = async (msgs: Array<{ role: string; content: string }>) => {
     const res = await fetch('/api/chat', {
@@ -183,6 +191,7 @@ export default function PlayPage() {
         body: JSON.stringify({
           sessionId: session.sessionId,
           kidId: kidId ?? null,
+          kidName: kid?.name ?? '',
           sessionNumber,
           startedAt: session.summary.startedAt,
           endedAt: session.summary.endedAt ?? Date.now(),
@@ -205,6 +214,7 @@ export default function PlayPage() {
       const payload = JSON.stringify({
         sessionId: session.sessionId,
         kidId: kidId ?? null,
+        kidName: kid?.name ?? '',
         sessionNumber,
         startedAt: session.summary.startedAt,
         endedAt: Date.now(),
@@ -230,6 +240,7 @@ export default function PlayPage() {
 
   useEffect(() => {
     if (!session.isEnded) return;
+    sessionEndedRef.current = true;
     setStatus('ended');
     const goodbye =
       "That was so much fun! You are really clever! Tell your Mamma or Papa what we talked about today. Bye bye!";

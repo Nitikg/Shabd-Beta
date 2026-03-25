@@ -1,6 +1,7 @@
 export const runtime = 'nodejs';
 
 import { getDb, isFirebaseConfigured } from '@/lib/firebaseAdmin';
+import { FieldValue } from 'firebase-admin/firestore';
 import { incrementSessionCount, saveSessionSummary } from '@/lib/kidProfile';
 import { generateSessionMemory } from '@/lib/promptBuilder';
 import type { ChatMessage } from '@/hooks/useSession';
@@ -8,6 +9,7 @@ import type { ChatMessage } from '@/hooks/useSession';
 type SaveSessionBody = {
   sessionId: string;
   kidId: string | null;
+  kidName?: string;
   sessionNumber: number;
   startedAt: number;
   endedAt: number;
@@ -25,7 +27,13 @@ export async function POST(req: Request) {
 
   try {
     const body = (await req.json()) as SaveSessionBody;
-    const { sessionId, kidId, sessionNumber, messages, ...rest } = body;
+    const { sessionId, kidId, kidName, sessionNumber, messages,
+            startedAt, endedAt, durationSeconds, turnCount, language } = body;
+
+    // Validate sessionId is a UUID to prevent doc key injection
+    if (!sessionId || !/^[0-9a-f-]{36}$/.test(sessionId)) {
+      return Response.json({ ok: false, error: 'Invalid session ID' }, { status: 400 });
+    }
 
     const db = getDb();
 
@@ -35,7 +43,11 @@ export async function POST(req: Request) {
       .set({
         kidId: kidId ?? null,
         sessionNumber: kidId ? sessionNumber : null,
-        ...rest,
+        startedAt: startedAt ?? null,
+        endedAt: endedAt ?? null,
+        durationSeconds: typeof durationSeconds === 'number' ? durationSeconds : 0,
+        turnCount: typeof turnCount === 'number' ? turnCount : 0,
+        language: typeof language === 'string' ? language : '',
         turns: messages.map((m, i) => ({
           role: m.role,
           text: m.content,
@@ -45,17 +57,14 @@ export async function POST(req: Request) {
         starRating: null,
         chips: [],
         openText: '',
-        savedAt: Date.now()
+        savedAt: FieldValue.serverTimestamp()
       });
 
     if (kidId) {
       await incrementSessionCount(kidId);
 
       // Save a short memory so session 2/3 can reference session 1/2
-      const memory = generateSessionMemory(
-        (await db.collection('kids').doc(kidId).get()).data()?.name ?? '',
-        messages
-      );
+      const memory = generateSessionMemory(kidName ?? '', messages);
       if (memory) {
         await saveSessionSummary(kidId, sessionNumber, memory);
       }

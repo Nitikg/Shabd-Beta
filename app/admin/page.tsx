@@ -130,11 +130,8 @@ function PasswordGate({ onAuth }: { onAuth: (pw: string) => void }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (pw === 'KIKI_ADMIN_2026') {
-      onAuth(pw);
-    } else {
-      setError(true);
-    }
+    if (!pw.trim()) { setError(true); return; }
+    onAuth(pw.trim());
   }
 
   return (
@@ -312,7 +309,7 @@ export default function AdminPage() {
   // Restore from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem('shabd-admin-pw');
-    if (stored === 'KIKI_ADMIN_2026') {
+    if (stored) {
       setPassword(stored);
     }
   }, []);

@@ -62,7 +62,7 @@ function AccessGate({ onUnlock }: { onUnlock: () => void }) {
 
   const submit = () => {
     if (code.trim().toUpperCase() === ACCESS_CODE) {
-      sessionStorage.setItem(SESSION_KEY, 'true');
+      sessionStorage.setItem(SESSION_KEY, code.trim().toUpperCase());
       onUnlock();
     } else {
       setError(true);
@@ -278,6 +278,7 @@ function RegistrationForm({ onSuccess }: { onSuccess: (result: RegistrationResul
         language: form.language,
         interests: form.interests,
         whatsappNumber: form.whatsappNumber.trim() || null,
+        accessCode: sessionStorage.getItem(SESSION_KEY) ?? '',
       };
 
       const res = await fetch('/api/register', {
@@ -473,7 +474,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = sessionStorage.getItem(SESSION_KEY);
-      if (stored === 'true') setUnlocked(true);
+      if (stored) setUnlocked(true);
     }
   }, []);
 

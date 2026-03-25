@@ -12,6 +12,8 @@ type PlayResult = { ok: boolean; used: 'elevenlabs' | 'browser'; error?: string 
 
 // Reusable audio element — avoids creating/destroying on every utterance
 let sharedAudio: HTMLAudioElement | null = null;
+// Circuit breaker: skip ElevenLabs for the rest of the page session after first failure
+let elevenLabsDisabled = false;
 
 function getAudio(): HTMLAudioElement {
   if (!sharedAudio && typeof window !== 'undefined') {
@@ -22,6 +24,7 @@ function getAudio(): HTMLAudioElement {
 
 async function speakWithElevenLabs(text: string): Promise<boolean> {
   if (typeof window === 'undefined') return false;
+  if (elevenLabsDisabled) return false;
 
   try {
     const res = await fetch('/api/tts', {
@@ -30,10 +33,16 @@ async function speakWithElevenLabs(text: string): Promise<boolean> {
       body: JSON.stringify({ text }),
     });
 
-    if (!res.ok) return false;
+    if (!res.ok) {
+      elevenLabsDisabled = true;
+      return false;
+    }
 
     const blob = await res.blob();
-    if (blob.size === 0) return false;
+    if (blob.size === 0) {
+      elevenLabsDisabled = true;
+      return false;
+    }
 
     const url = URL.createObjectURL(blob);
     const audio = getAudio();
@@ -54,15 +63,18 @@ async function speakWithElevenLabs(text: string): Promise<boolean> {
 
       audio.onerror = () => {
         cleanup();
+        elevenLabsDisabled = true;
         resolve(false);
       };
 
       audio.play().catch(() => {
         cleanup();
+        elevenLabsDisabled = true;
         resolve(false);
       });
     });
   } catch {
+    elevenLabsDisabled = true;
     return false;
   }
 }

@@ -9,6 +9,7 @@ type RegisterBody = {
   language: string;
   interests: string[];
   whatsappNumber?: string;
+  accessCode?: string;
 };
 
 function generateId(name: string): string {
@@ -38,7 +39,13 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { name, ageYears, class: cls, language, interests, whatsappNumber } = body;
+  const { name, ageYears, class: cls, language, interests, whatsappNumber, accessCode } = body;
+
+  // Validate access code server-side
+  const expectedCode = process.env.REGISTER_ACCESS_CODE;
+  if (expectedCode && accessCode?.toUpperCase() !== expectedCode.toUpperCase()) {
+    return Response.json({ error: 'Invalid access code' }, { status: 403 });
+  }
 
   // Validate required fields
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -68,7 +75,7 @@ export async function POST(req: Request) {
   }
 
   const kidId = generateId(name.trim());
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shabd-web-beta.vercel.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shabd-beta.vercel.app';
 
   try {
     await getDb().collection('kids').doc(kidId).set({
